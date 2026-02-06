@@ -38,7 +38,6 @@ export default function RootLayout({ children }) {
                 width: "100%",
                 height: "100vh",
                 willChange: "transform, opacity",
-                transform: "translateZ(0)",
                 backfaceVisibility: "hidden",
               }}
             >
