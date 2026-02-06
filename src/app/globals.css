@@ -120,6 +120,12 @@ body {
   background-repeat: no-repeat;
 }
 
+.aura-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
 .aura-spotlightOverlay {
   --spot-x: 50%;
   --spot-y: 40%;
@@ -143,7 +149,7 @@ body {
   position: fixed;
   inset: 0 0 auto 0;
   height: 220px;
-  z-index: 50;
+  z-index: 20;
   pointer-events: none;
 
   backface-visibility: hidden;

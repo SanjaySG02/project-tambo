@@ -18,9 +18,20 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        style={{ backgroundColor: "black", margin: 0, overflow: "hidden" }}
+        style={{ margin: 0, background: "var(--background)", color: "var(--foreground)" }}
       >
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <div
+              className="aura-hqBg"
+              style={{
+                height: "100vh",
+                width: "100vw",
+                background: "var(--background)",
+              }}
+            />
+          }
+        >
           <Providers>{children}</Providers>
         </Suspense>
       </body>

@@ -13,6 +13,32 @@ import {
   useTransitionIntent,
 } from "../components/aura/transition-intent";
 
+const DOOR_EXIT_OFFSETS = {
+  utilities: { x: -120, y: -10 },
+  security: { x: 120, y: -10 },
+  amenities: { x: -80, y: 30 },
+  community: { x: 80, y: 30 },
+};
+
+function buildExit(intent, routeTransition) {
+  const base = {
+    opacity: 0,
+    scale: 1.1,
+    transition: routeTransition,
+  };
+
+  if (!intent || intent.type !== "door") return base;
+  const offset = DOOR_EXIT_OFFSETS[intent.sector];
+  if (!offset) return base;
+
+  return {
+    ...base,
+    x: offset.x,
+    y: offset.y,
+    scale: 1.18,
+  };
+}
+
 function AnimatedRoute({ children }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -55,43 +81,45 @@ function AnimatedRoute({ children }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <motion.div
-        aria-hidden="true"
-        className="aura-lensFlare"
-        initial={{ opacity: 0.6 }}
-        animate={lensFlareControls}
-      />
-
-      <AnimatePresence mode="wait" initial={false} onExitComplete={clearIntent}>
+      <div className="aura-shell">
         <motion.div
-          key={transitionKey}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-            transition: routeTransition,
-          }}
-          exit={{ opacity: 0, scale: 1.1, transition: routeTransition }}
-          onAnimationComplete={(definition) => {
-            if (definition !== "animate") return;
-            lensFlareControls.start({
-              opacity: 0.6,
-              transition: { duration: 0.25, ease: "easeOut" },
-            });
-          }}
-          style={{
-            width: "100%",
-            height: "100vh",
-            willChange: "transform, opacity",
-            backfaceVisibility: "hidden",
-            transformOrigin,
-            transformStyle: "preserve-3d",
-            translateZ: 0,
-          }}
-        >
-          {children}
-        </motion.div>
-      </AnimatePresence>
+          aria-hidden="true"
+          className="aura-lensFlare"
+          initial={{ opacity: 0.6 }}
+          animate={lensFlareControls}
+        />
+
+        <AnimatePresence mode="wait" initial={false} onExitComplete={clearIntent}>
+          <motion.div
+            key={transitionKey}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              transition: routeTransition,
+            }}
+            exit={buildExit(intent, routeTransition)}
+            onAnimationComplete={(definition) => {
+              if (definition !== "animate") return;
+              lensFlareControls.start({
+                opacity: 0.6,
+                transition: { duration: 0.25, ease: "easeOut" },
+              });
+            }}
+            style={{
+              width: "100%",
+              height: "100vh",
+              overflow: "hidden",
+              willChange: "transform, opacity",
+              backfaceVisibility: "hidden",
+              transformOrigin,
+              transformStyle: "preserve-3d",
+            }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </MotionConfig>
   );
 }
