@@ -7,7 +7,8 @@ import {
   useAnimationControls,
 } from "framer-motion";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { LayoutRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {
   TransitionIntentProvider,
   useTransitionIntent,
@@ -20,10 +21,40 @@ const DOOR_EXIT_OFFSETS = {
   community: { x: 80, y: 30 },
 };
 
+function FrozenRoute({ children }) {
+  const context = useContext(LayoutRouterContext);
+  const [frozen] = useState(context);
+  return (
+    <LayoutRouterContext.Provider value={frozen}>
+      {children}
+    </LayoutRouterContext.Provider>
+  );
+}
+
+function buildEnter(intent) {
+  const base = {
+    opacity: 0,
+    y: 10,
+    scale: 0.985,
+  };
+
+  if (!intent || intent.type !== "door") return base;
+  const offset = DOOR_EXIT_OFFSETS[intent.sector];
+  if (!offset) return base;
+
+  return {
+    opacity: 0,
+    x: offset.x,
+    y: offset.y,
+    scale: 1.1,
+  };
+}
+
 function buildExit(intent, routeTransition) {
   const base = {
     opacity: 0,
-    scale: 1.1,
+    y: -10,
+    scale: 1.02,
     transition: routeTransition,
   };
 
@@ -35,7 +66,7 @@ function buildExit(intent, routeTransition) {
     ...base,
     x: offset.x,
     y: offset.y,
-    scale: 1.18,
+    scale: 1.12,
   };
 }
 
@@ -52,7 +83,7 @@ function AnimatedRoute({ children }) {
 
   const routeTransition = {
     type: "tween",
-    duration: 0.4,
+    duration: 0.38,
     ease: [0.22, 1, 0.36, 1],
   };
 
@@ -89,13 +120,15 @@ function AnimatedRoute({ children }) {
           animate={lensFlareControls}
         />
 
-        <AnimatePresence mode="wait" initial={false} onExitComplete={clearIntent}>
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={transitionKey}
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={buildEnter(intent)}
             animate={{
               opacity: 1,
               scale: 1,
+              x: 0,
+              y: 0,
               transition: routeTransition,
             }}
             exit={buildExit(intent, routeTransition)}
@@ -105,6 +138,8 @@ function AnimatedRoute({ children }) {
                 opacity: 0.6,
                 transition: { duration: 0.25, ease: "easeOut" },
               });
+
+              if (intent) clearIntent();
             }}
             style={{
               width: "100%",
@@ -116,7 +151,7 @@ function AnimatedRoute({ children }) {
               transformStyle: "preserve-3d",
             }}
           >
-            {children}
+            <FrozenRoute>{children}</FrozenRoute>
           </motion.div>
         </AnimatePresence>
       </div>
