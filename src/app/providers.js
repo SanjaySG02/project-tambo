@@ -23,7 +23,6 @@ const DOOR_EXIT_OFFSETS = {
 function buildExit(intent, routeTransition) {
   const base = {
     opacity: 0,
-    y: -12,
     scale: 1.02,
     transition: routeTransition,
   };
@@ -51,13 +50,21 @@ function AnimatedRoute({ children }) {
     [pathname, queryString],
   );
 
+  const enterDuration = 0.32;
+  const exitDuration = 0.22;
+  const ease = [0.22, 1, 0.36, 1];
+
   const routeTransition = {
     type: "tween",
-    duration: 0.32,
-    ease: [0.22, 1, 0.36, 1],
+    duration: enterDuration,
+    ease,
   };
 
-  const routeTransitionMs = 320;
+  const exitTransition = {
+    type: "tween",
+    duration: exitDuration,
+    ease,
+  };
 
   const lensFlareControls = useAnimationControls();
   const hasMounted = useRef(false);
@@ -70,18 +77,18 @@ function AnimatedRoute({ children }) {
 
     lensFlareControls.start({
       opacity: 0.2,
-      transition: { duration: 0.2, ease: "easeOut" },
+      transition: { duration: exitDuration, ease: "easeOut" },
     });
 
     const timeout = setTimeout(() => {
       lensFlareControls.start({
         opacity: 0.6,
-        transition: { duration: 0.25, ease: "easeOut" },
+        transition: { duration: enterDuration, ease: "easeOut" },
       });
-    }, routeTransitionMs);
+    }, Math.round((exitDuration + enterDuration) * 1000));
 
     return () => clearTimeout(timeout);
-  }, [transitionKey, lensFlareControls]);
+  }, [transitionKey, lensFlareControls, enterDuration, exitDuration]);
 
   const transformOrigin =
     {
@@ -101,7 +108,7 @@ function AnimatedRoute({ children }) {
           animate={lensFlareControls}
         />
 
-        <AnimatePresence mode="sync" initial={false} onExitComplete={clearIntent}>
+        <AnimatePresence mode="wait" initial={false} onExitComplete={clearIntent}>
           <motion.div
             key={transitionKey}
             initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -111,7 +118,7 @@ function AnimatedRoute({ children }) {
               scale: 1,
               transition: routeTransition,
             }}
-            exit={buildExit(intent, routeTransition)}
+            exit={buildExit(intent, exitTransition)}
             style={{
               width: "100%",
               height: "100vh",
@@ -120,8 +127,6 @@ function AnimatedRoute({ children }) {
               backfaceVisibility: "hidden",
               transformOrigin,
               transformStyle: "preserve-3d",
-              position: "absolute",
-              inset: 0,
             }}
           >
             {children}
