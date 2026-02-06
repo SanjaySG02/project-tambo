@@ -2,16 +2,28 @@
 import { useRouter, useSearchParams } from "next/navigation"; // 1. Added useSearchParams
 import { motion } from "framer-motion";
 import { ArrowLeft, Zap, Droplets, Flame, Sun } from "lucide-react";
+import { Suspense } from "react";
 
-export default function UtilitiesRoom() {
+const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
+const utilitiesBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`;
+
+const utilitiesContainerStyle = {
+  minHeight: '100vh',
+  backgroundColor: 'black',
+  backgroundImage: utilitiesBackgroundImage,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  color: 'white',
+  padding: '40px',
+  fontFamily: 'sans-serif',
+};
+
+function UtilitiesRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // 2. Capture the unit number from the URL
   const unitNumber = searchParams.get('unit') || "000";
-
-  // 🔗 YOUR IMAGE LINK
-  const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 
   const stats = [
     { name: "Electricity", icon: <Zap />, value: "12.4", unit: "kWh", status: "Normal", color: "#facc15" },
@@ -21,16 +33,7 @@ export default function UtilitiesRoom() {
   ];
 
   return (
-    <div style={{ 
-      minHeight: "100vh", 
-      backgroundColor: "black", 
-      backgroundImage: `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      color: "white", 
-      padding: "40px", 
-      fontFamily: "sans-serif" 
-    }}>
+    <div style={utilitiesContainerStyle}>
 
       {/* 3. DYNAMIC UNIT HUD */}
       <div style={{ 
@@ -113,5 +116,13 @@ export default function UtilitiesRoom() {
         ))}
       </div>
     </div>
+  );
+}
+
+export default function UtilitiesRoom() {
+  return (
+    <Suspense fallback={<div style={utilitiesContainerStyle} />}>
+      <UtilitiesRoomContent />
+    </Suspense>
   );
 }

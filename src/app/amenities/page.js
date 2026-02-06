@@ -2,15 +2,30 @@
 import { useRouter, useSearchParams } from "next/navigation"; // 1. Added useSearchParams
 import { motion } from "framer-motion";
 import { ArrowLeft, Dumbbell, Waves, Coffee, TreePine } from "lucide-react";
+import { Suspense } from "react";
 
-export default function AmenitiesRoom() {
+const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
+const amenitiesBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`;
+
+const amenitiesContainerStyle = {
+  height: '100vh',
+  width: '100vw',
+  backgroundColor: 'black',
+  backgroundImage: amenitiesBackgroundImage,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  color: 'white',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+function AmenitiesRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // 2. Grabs the unit number from the URL
   const unitNumber = searchParams.get('unit') || "000";
-
-  const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 
   const cards = [
     { title: "GYM", desc: "Level 2 • 24/7", icon: <Dumbbell />, color: "#3b82f6" },
@@ -20,18 +35,7 @@ export default function AmenitiesRoom() {
   ];
 
   return (
-    <div style={{ 
-      height: '100vh', 
-      width: '100vw',
-      backgroundColor: 'black',
-      backgroundImage: `radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      color: 'white',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
+    <div style={amenitiesContainerStyle}>
       
       {/* 3. UNIT HUD: Shows which resident is accessing amenities */}
       <div style={{ 
@@ -101,5 +105,13 @@ export default function AmenitiesRoom() {
         ))}
       </div>
     </div>
+  );
+}
+
+export default function AmenitiesRoom() {
+  return (
+    <Suspense fallback={<div style={amenitiesContainerStyle} />}>
+      <AmenitiesRoomContent />
+    </Suspense>
   );
 }
