@@ -23,7 +23,8 @@ const DOOR_EXIT_OFFSETS = {
 function buildExit(intent, routeTransition) {
   const base = {
     opacity: 0,
-    scale: 1.1,
+    y: -12,
+    scale: 1.02,
     transition: routeTransition,
   };
 
@@ -35,7 +36,7 @@ function buildExit(intent, routeTransition) {
     ...base,
     x: offset.x,
     y: offset.y,
-    scale: 1.18,
+    scale: 1.06,
   };
 }
 
@@ -52,9 +53,11 @@ function AnimatedRoute({ children }) {
 
   const routeTransition = {
     type: "tween",
-    duration: 0.4,
+    duration: 0.32,
     ease: [0.22, 1, 0.36, 1],
   };
+
+  const routeTransitionMs = 320;
 
   const lensFlareControls = useAnimationControls();
   const hasMounted = useRef(false);
@@ -69,6 +72,15 @@ function AnimatedRoute({ children }) {
       opacity: 0.2,
       transition: { duration: 0.2, ease: "easeOut" },
     });
+
+    const timeout = setTimeout(() => {
+      lensFlareControls.start({
+        opacity: 0.6,
+        transition: { duration: 0.25, ease: "easeOut" },
+      });
+    }, routeTransitionMs);
+
+    return () => clearTimeout(timeout);
   }, [transitionKey, lensFlareControls]);
 
   const transformOrigin =
@@ -89,23 +101,17 @@ function AnimatedRoute({ children }) {
           animate={lensFlareControls}
         />
 
-        <AnimatePresence mode="wait" initial={false} onExitComplete={clearIntent}>
+        <AnimatePresence mode="sync" initial={false} onExitComplete={clearIntent}>
           <motion.div
             key={transitionKey}
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
             animate={{
               opacity: 1,
+              y: 0,
               scale: 1,
               transition: routeTransition,
             }}
             exit={buildExit(intent, routeTransition)}
-            onAnimationComplete={(definition) => {
-              if (definition !== "animate") return;
-              lensFlareControls.start({
-                opacity: 0.6,
-                transition: { duration: 0.25, ease: "easeOut" },
-              });
-            }}
             style={{
               width: "100%",
               height: "100vh",
@@ -114,6 +120,8 @@ function AnimatedRoute({ children }) {
               backfaceVisibility: "hidden",
               transformOrigin,
               transformStyle: "preserve-3d",
+              position: "absolute",
+              inset: 0,
             }}
           >
             {children}
