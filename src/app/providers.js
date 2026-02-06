@@ -20,6 +20,14 @@ const DOOR_EXIT_OFFSETS = {
   community: { x: 80, y: 30 },
 };
 
+const ROUTE_ANIMATION = {
+  enterDuration: 0.32,
+  exitDuration: 0.22,
+  ease: [0.22, 1, 0.36, 1],
+  enterOffsetY: 6,
+  enterScale: 0.98,
+};
+
 function buildExit(intent, routeTransition) {
   const base = {
     opacity: 0,
@@ -50,9 +58,8 @@ function AnimatedRoute({ children }) {
     [pathname, queryString],
   );
 
-  const enterDuration = 0.32;
-  const exitDuration = 0.22;
-  const ease = [0.22, 1, 0.36, 1];
+  const { enterDuration, exitDuration, ease, enterOffsetY, enterScale } =
+    ROUTE_ANIMATION;
 
   const routeTransition = {
     type: "tween",
@@ -79,16 +86,7 @@ function AnimatedRoute({ children }) {
       opacity: 0.2,
       transition: { duration: exitDuration, ease: "easeOut" },
     });
-
-    const timeout = setTimeout(() => {
-      lensFlareControls.start({
-        opacity: 0.6,
-        transition: { duration: enterDuration, ease: "easeOut" },
-      });
-    }, Math.round((exitDuration + enterDuration) * 1000));
-
-    return () => clearTimeout(timeout);
-  }, [transitionKey, lensFlareControls, enterDuration, exitDuration]);
+  }, [transitionKey, lensFlareControls, exitDuration]);
 
   const transformOrigin =
     {
@@ -97,6 +95,17 @@ function AnimatedRoute({ children }) {
       amenities: "25% 70%",
       community: "75% 70%",
     }[intent?.sector] || "50% 50%";
+
+  const variants = {
+    initial: { opacity: 0, y: enterOffsetY, scale: enterScale },
+    animate: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: routeTransition,
+    },
+    exit: (customIntent) => buildExit(customIntent, exitTransition),
+  };
 
   return (
     <MotionConfig reducedMotion="user">
@@ -111,14 +120,18 @@ function AnimatedRoute({ children }) {
         <AnimatePresence mode="wait" initial={false} onExitComplete={clearIntent}>
           <motion.div
             key={transitionKey}
-            initial={{ opacity: 0, y: 12, scale: 0.98 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              transition: routeTransition,
+            custom={intent}
+            variants={variants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            onAnimationComplete={(definition) => {
+              if (definition !== "animate") return;
+              lensFlareControls.start({
+                opacity: 0.6,
+                transition: { duration: enterDuration, ease: "easeOut" },
+              });
             }}
-            exit={buildExit(intent, exitTransition)}
             style={{
               width: "100%",
               height: "100vh",
