@@ -1,31 +1,32 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { ArrowLeft, Lock, Unlock } from "lucide-react";
 
-export default function SecurityRoom() {
+const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
+const securityBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`;
+
+const securityContainerStyle = {
+  minHeight: '100vh',
+  backgroundColor: '#050505',
+  backgroundImage: securityBackgroundImage,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  color: 'white',
+  padding: '40px',
+  fontFamily: 'sans-serif',
+};
+
+function SecurityRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
   const unitNumber = searchParams.get('unit') || "000";
   const [isLocked, setIsLocked] = useState(true);
 
-  // 🔗 YOUR IMAGE LINK
-  const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
-
   return (
-    <div style={{ 
-      minHeight: "100vh", 
-      backgroundColor: "#050505", 
-      // Added background image with a gradient overlay for better readability
-      backgroundImage: `radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      color: "white", 
-      padding: "40px",
-      fontFamily: "sans-serif"
-    }}>
+    <div style={securityContainerStyle}>
       
       {/* DYNAMIC HUD */}
       <div style={{ 
@@ -83,20 +84,28 @@ export default function SecurityRoom() {
           Biometric Authorization for Unit {unitNumber} Verified
         </p>
 
-        <button 
+        <motion.button 
           onClick={() => setIsLocked(!isLocked)}
-          whilehover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.05 }}
           style={{
             padding: '18px 50px', borderRadius: '50px', border: 'none',
             backgroundColor: isLocked ? '#00ff88' : '#ff0055',
             color: 'black', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px',
             boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
-            transition: 'all 0.3s ease'
+            transition: 'background-color 0.3s ease, box-shadow 0.3s ease'
           }}
         >
           {isLocked ? "UNLOCK DOOR" : "SECURE DOOR"}
-        </button>
+        </motion.button>
       </div>
     </div>
+  );
+}
+
+export default function SecurityRoom() {
+  return (
+    <Suspense fallback={<div style={securityContainerStyle} />}>
+      <SecurityRoomContent />
+    </Suspense>
   );
 }

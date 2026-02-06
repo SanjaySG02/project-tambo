@@ -2,16 +2,28 @@
 import { useRouter, useSearchParams } from "next/navigation"; // 1. Added useSearchParams
 import { motion } from "framer-motion";
 import { ArrowLeft, MessageSquare, Calendar, Users, Bell, Send } from "lucide-react";
+import { Suspense } from "react";
 
-export default function CommunityRoom() {
+const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
+const communityBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`;
+
+const communityContainerStyle = {
+  minHeight: '100vh',
+  backgroundColor: 'black',
+  backgroundImage: communityBackgroundImage,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  color: 'white',
+  padding: '40px',
+  fontFamily: 'sans-serif',
+};
+
+function CommunityRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // 2. Capture the unit number from the URL
   const unitNumber = searchParams.get('unit') || "000";
-  
-  // 🔗 YOUR IMAGE LINK
-  const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 
   const announcements = [
     { id: 1, title: "Rooftop BBQ Night", date: "Tomorrow, 7 PM", type: "Event", icon: <Calendar size={18} />, color: "#ffaa00" },
@@ -20,16 +32,7 @@ export default function CommunityRoom() {
   ];
 
   return (
-    <div style={{ 
-      minHeight: "100vh", 
-      backgroundColor: "black", 
-      backgroundImage: `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      color: "white", 
-      padding: "40px",
-      fontFamily: "sans-serif"
-    }}>
+    <div style={communityContainerStyle}>
 
       {/* 3. DYNAMIC UNIT HUD (Shows who is chatting) */}
       <div style={{ 
@@ -142,5 +145,13 @@ export default function CommunityRoom() {
 
       </div>
     </div>
+  );
+}
+
+export default function CommunityRoom() {
+  return (
+    <Suspense fallback={<div style={communityContainerStyle} />}>
+      <CommunityRoomContent />
+    </Suspense>
   );
 }

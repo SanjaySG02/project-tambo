@@ -1,32 +1,39 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useState, useEffect, Suspense } from "react";
+import { useEffect, Suspense, useState } from "react";
 import { Send, Sparkles } from "lucide-react";
+
+function useIsHydrated() {
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    // Hydration guard: avoid SSR/CSR mismatch when reading `useSearchParams()`.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHydrated(true);
+  }, []);
+
+  return hydrated;
+}
 
 function HallwayContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // State management to prevent "000" ghosting
-  const [isMounted, setIsMounted] = useState(false);
+  const isHydrated = useIsHydrated();
+
   const [command, setCommand] = useState("");
   const [aiMessage, setAiMessage] = useState("System Authenticating...");
 
-  // 1. Force the app to wait until it's fully loaded in the browser
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const urlUnit = searchParams.get('unit');
+  const urlUnit = searchParams.get("unit");
 
   // 2. THE HARD GUARD: If we are in the browser but NO unit is in the URL, go back home.
   // This prevents the "000" from ever being assigned.
   useEffect(() => {
-    if (isMounted && !urlUnit) {
+    if (isHydrated && !urlUnit) {
       router.push("/");
     }
-  }, [isMounted, urlUnit, router]);
+  }, [isHydrated, urlUnit, router]);
 
   const bgImage = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 
@@ -65,7 +72,7 @@ function HallwayContent() {
   };
 
   // 3. RENDER NOTHING until we are mounted and have a valid unit
-  if (!isMounted || !urlUnit) {
+  if (!isHydrated || !urlUnit) {
     return <div style={{ height: '100vh', backgroundColor: '#02040a' }} />;
   }
 
