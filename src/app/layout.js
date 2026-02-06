@@ -1,8 +1,7 @@
-"use client";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
-import { AnimatePresence, MotionConfig, motion } from "framer-motion";
-import { usePathname } from "next/navigation";
+import Providers from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,36 +14,26 @@ const geistMono = Geist_Mono({
 });
 
 export default function RootLayout({ children }) {
-  const pathname = usePathname();
-
-  const routeTransition = {
-    type: "tween",
-    duration: 0.4,
-    ease: [0.22, 1, 0.36, 1],
-  };
-
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} style={{ backgroundColor: "black", margin: 0, overflow: "hidden" }}>
-        <MotionConfig reducedMotion="user">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.08 }}
-              transition={routeTransition}
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ margin: 0, background: "var(--background)", color: "var(--foreground)" }}
+      >
+        <Suspense
+          fallback={
+            <div
+              className="aura-hqBg"
               style={{
-                width: "100%",
                 height: "100vh",
-                willChange: "transform, opacity",
-                backfaceVisibility: "hidden",
+                width: "100vw",
+                background: "var(--background)",
               }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
-        </MotionConfig>
+            />
+          }
+        >
+          <Providers>{children}</Providers>
+        </Suspense>
       </body>
     </html>
   );

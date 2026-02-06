@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ArrowLeft, Lock, Unlock } from "lucide-react";
 
 const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
@@ -22,11 +22,19 @@ function SecurityRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const unitNumber = searchParams.get('unit') || "000";
+  const unitNumber = searchParams.get('unit');
   const [isLocked, setIsLocked] = useState(true);
 
+  useEffect(() => {
+    if (!unitNumber) router.push("/");
+  }, [unitNumber, router]);
+
+  if (!unitNumber) {
+    return <div className="aura-hqBg" style={securityContainerStyle} />;
+  }
+
   return (
-    <div style={securityContainerStyle}>
+    <div className="aura-hqBg" style={securityContainerStyle}>
       
       {/* DYNAMIC HUD */}
       <div style={{ 

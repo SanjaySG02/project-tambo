@@ -1,8 +1,9 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { useEffect, Suspense, useState } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { useEffect, Suspense, useRef, useState } from "react";
 import { Send, Sparkles } from "lucide-react";
+import { useTransitionIntent } from "../../components/aura/transition-intent";
 
 function useIsHydrated() {
   const [hydrated, setHydrated] = useState(false);
@@ -19,6 +20,7 @@ function useIsHydrated() {
 function HallwayContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setIntent } = useTransitionIntent();
   
   const isHydrated = useIsHydrated();
 
@@ -38,11 +40,48 @@ function HallwayContent() {
   const bgImage = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 
   const doors = [
-    { name: "UTILITIES", color: "#00f2ff", path: "/utilities", keywords: ["bill", "electricity", "water", "gas", "energy", "power"] },
-    { name: "SECURITY", color: "#ff0055", path: "/security", keywords: ["lock", "camera", "safe", "entrance", "alarm", "door"] },
-    { name: "AMENITIES", color: "#00ff88", path: "/amenities", keywords: ["gym", "pool", "park", "lounge", "exercise", "workout"] },
-    { name: "COMMUNITY", color: "#ffaa00", path: "/community", keywords: ["chat", "neighbors", "event", "message", "bbq", "hub"] }
+    { name: "UTILITIES", sector: "utilities", color: "#00f2ff", path: "/utilities", keywords: ["bill", "electricity", "water", "gas", "energy"] },
+    { name: "SECURITY", sector: "security", color: "#ff0055", path: "/security", keywords: ["lock", "camera", "safe", "alarm", "entrance"] },
+    { name: "AMENITIES", sector: "amenities", color: "#00ff88", path: "/amenities", keywords: ["gym", "pool", "park", "lounge", "workout"] },
+    { name: "COMMUNITY", sector: "community", color: "#ffaa00", path: "/community", keywords: ["chat", "neighbors", "event", "hub"] }
   ];
+
+  const sceneRef = useRef(null);
+  const spotlightRef = useRef(null);
+
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+
+  const rotateY = useTransform(mx, [-0.5, 0.5], [-8, 8]);
+  const rotateX = useTransform(my, [-0.5, 0.5], [6, -6]);
+
+  const rotateYSpring = useSpring(rotateY, { stiffness: 120, damping: 18 });
+  const rotateXSpring = useSpring(rotateX, { stiffness: 120, damping: 18 });
+
+  function updateMouse(e) {
+    const el = sceneRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+
+    mx.set(px - 0.5);
+    my.set(py - 0.5);
+
+    const spot = spotlightRef.current;
+    if (spot) {
+      spot.style.setProperty("--spot-x", `${e.clientX - rect.left}px`);
+      spot.style.setProperty("--spot-y", `${e.clientY - rect.top}px`);
+    }
+  }
+
+  function navigateToDoor(door, nextUnit) {
+    setIntent({ type: "door", sector: door.sector, unit: nextUnit });
+    requestAnimationFrame(() => {
+      router.push(`${door.path}?unit=${nextUnit}`);
+    });
+  }
 
   const handleAiCommand = (e) => {
     e.preventDefault();
@@ -60,8 +99,8 @@ function HallwayContent() {
     if (targetDoor) {
       setAiMessage(`Direct Jump: ${targetDoor.name} (Unit ${targetUnit})...`);
       setTimeout(() => {
-        router.push(`${targetDoor.path}?unit=${targetUnit}`);
-      }, 500);
+        navigateToDoor(targetDoor, targetUnit);
+      }, 250);
     } else if (numberMatch) {
       setAiMessage(`Switching to Unit ${targetUnit}...`);
       router.push(`/dashboard?unit=${targetUnit}`);
@@ -77,12 +116,22 @@ function HallwayContent() {
   }
 
   return (
-    <div style={{ 
+    <div
+      ref={sceneRef}
+      className="aura-hqBg"
+      style={{ 
       height: '100vh', width: '100vw', backgroundColor: '#02040a',
       backgroundImage: `url('${bgImage}')`, backgroundSize: 'cover', backgroundPosition: 'center',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      perspective: '1500px', overflow: 'hidden'
-    }}>
+      perspective: '1500px', overflow: 'hidden', position: 'relative'
+    }}
+      onMouseMove={updateMouse}
+      onMouseLeave={() => {
+        mx.set(0);
+        my.set(0);
+      }}
+    >
+      <div ref={spotlightRef} className="aura-spotlightOverlay" />
       
       <motion.div 
         key={urlUnit}
@@ -97,50 +146,71 @@ function HallwayContent() {
         RESIDENCE UNIT: {urlUnit}
       </motion.div>
 
-      <div style={{ display: 'flex', gap: '20px', transformStyle: 'preserve-3d', marginBottom: '60px' }}>
-        {doors.map((door) => (
-          <motion.div 
-            key={door.name}
-            whileHover={{ scale: 1.05, borderColor: door.color }}
-            style={{
-              width: '160px', height: '320px', backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px',
-              cursor: 'pointer', display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)'
-            }}
-            onClick={() => router.push(`${door.path}?unit=${urlUnit}`)}
-          >
-            <div style={{ width: '3px', height: '40px', backgroundColor: door.color, borderRadius: '4px', marginBottom: '30px', boxShadow: `0 0 15px ${door.color}` }} />
-            <span style={{ color: 'white', fontSize: '10px', letterSpacing: '4px' }}>{door.name}</span>
-          </motion.div>
-        ))}
-      </div>
-
-      <motion.div style={{
-          width: '500px', backgroundColor: 'rgba(0,0,0,0.85)', padding: '20px',
-          borderRadius: '20px', border: '1px solid rgba(0, 242, 255, 0.3)',
-          backdropFilter: 'blur(20px)', boxShadow: '0 0 40px rgba(0,242,255,0.1)'
+      <motion.div
+        style={{
+          rotateX: rotateXSpring,
+          rotateY: rotateYSpring,
+          translateZ: 0,
+          transformStyle: "preserve-3d",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          zIndex: 2,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-          <Sparkles size={16} color="#00f2ff" />
-          <span style={{ fontSize: '12px', color: '#00f2ff', letterSpacing: '2px' }}>{aiMessage}</span>
+        <div
+          style={{
+            display: "flex",
+            gap: "20px",
+            transformStyle: "preserve-3d",
+            marginBottom: "60px",
+          }}
+        >
+          {doors.map((door) => (
+            <motion.div 
+              key={door.name}
+              whileHover={{ scale: 1.05, borderColor: door.color }}
+              style={{
+                width: '160px', height: '320px', backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px',
+                cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)',
+                willChange: 'transform'
+              }}
+              onClick={() => navigateToDoor(door, urlUnit)}
+            >
+              <div style={{ width: '3px', height: '40px', backgroundColor: door.color, borderRadius: '4px', marginBottom: '30px', boxShadow: `0 0 15px ${door.color}` }} />
+              <span style={{ color: 'white', fontSize: '10px', letterSpacing: '4px' }}>{door.name}</span>
+            </motion.div>
+          ))}
         </div>
 
-        <form onSubmit={handleAiCommand} style={{ display: 'flex', gap: '10px' }}>
-          <input 
-            value={command}
-            onChange={(e) => setCommand(e.target.value)}
-            placeholder="Go to room... (e.g. Gym 201)"
-            style={{
-              flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              padding: '12px 20px', borderRadius: '12px', color: 'white', outline: 'none'
-            }}
-          />
-          <button type="submit" style={{ background: '#00f2ff', border: 'none', padding: '0 20px', borderRadius: '12px', cursor: 'pointer' }}>
-            <Send size={18} color="black" />
-          </button>
-        </form>
+        <motion.div style={{
+            width: '500px', backgroundColor: 'rgba(0,0,0,0.85)', padding: '20px',
+            borderRadius: '20px', border: '1px solid rgba(0, 242, 255, 0.3)',
+            backdropFilter: 'blur(20px)', boxShadow: '0 0 40px rgba(0,242,255,0.1)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+            <Sparkles size={16} color="#00f2ff" />
+            <span style={{ fontSize: '12px', color: '#00f2ff', letterSpacing: '2px' }}>{aiMessage}</span>
+          </div>
+
+          <form onSubmit={handleAiCommand} style={{ display: 'flex', gap: '10px' }}>
+            <input 
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              placeholder="Go to room... (e.g. Gym 201)"
+              style={{
+                flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                padding: '12px 20px', borderRadius: '12px', color: 'white', outline: 'none'
+              }}
+            />
+            <button type="submit" style={{ background: '#00f2ff', border: 'none', padding: '0 20px', borderRadius: '12px', cursor: 'pointer' }}>
+              <Send size={18} color="black" />
+            </button>
+          </form>
+        </motion.div>
       </motion.div>
     </div>
   );

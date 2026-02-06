@@ -3,9 +3,11 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Building2, Home, Sparkles, Send } from "lucide-react";
+import { useTransitionIntent } from "../components/aura/transition-intent";
 
 export default function LobbyPage() {
   const router = useRouter();
+  const { setIntent } = useTransitionIntent();
   const [command, setCommand] = useState("");
   const [aiMessage, setAiMessage] = useState("Lobby Terminal Active. Select a Unit.");
 
@@ -20,10 +22,10 @@ export default function LobbyPage() {
 
   // 1. DEFINE GLOBAL ROOMS FOR FULL ACCESS
   const rooms = [
-    { name: "UTILITIES", path: "/utilities", keywords: ["bill", "electricity", "water", "gas", "power"] },
-    { name: "SECURITY", path: "/security", keywords: ["lock", "camera", "safe", "alarm"] },
-    { name: "AMENITIES", path: "/amenities", keywords: ["gym", "pool", "park", "lounge", "exercise", "workout"] },
-    { name: "COMMUNITY", path: "/community", keywords: ["chat", "neighbors", "event", "message"] }
+    { name: "UTILITIES", sector: "utilities", path: "/utilities", keywords: ["bill", "electricity", "water", "gas", "energy"] },
+    { name: "SECURITY", sector: "security", path: "/security", keywords: ["lock", "camera", "safe", "alarm", "entrance"] },
+    { name: "AMENITIES", sector: "amenities", path: "/amenities", keywords: ["gym", "pool", "park", "lounge", "workout"] },
+    { name: "COMMUNITY", sector: "community", path: "/community", keywords: ["chat", "neighbors", "event", "hub"] }
   ];
 
   const handleAiCommand = (e) => {
@@ -44,12 +46,22 @@ export default function LobbyPage() {
     if (targetUnitId && targetRoom) {
       // Scenario: "Go to Gym of 201"
       setAiMessage(`Direct Access: ${targetRoom.name} - Unit ${targetUnitId}...`);
-      setTimeout(() => router.push(`${targetRoom.path}?unit=${targetUnitId}`), 800);
+      setTimeout(() => {
+        setIntent({ type: "door", sector: targetRoom.sector, unit: targetUnitId });
+        requestAnimationFrame(() => {
+          router.push(`${targetRoom.path}?unit=${targetUnitId}`);
+        });
+      }, 800);
       
     } else if (targetUnitId) {
       // Scenario: "Go to 201" or "Open 201"
       setAiMessage(`Authenticating Unit ${targetUnitId}... Access Granted.`);
-      setTimeout(() => router.push(`/dashboard?unit=${targetUnitId}`), 800);
+      setTimeout(() => {
+        setIntent({ type: "unit", unit: targetUnitId });
+        requestAnimationFrame(() => {
+          router.push(`/dashboard?unit=${targetUnitId}`);
+        });
+      }, 800);
       
     } else if (targetRoom) {
       // Scenario: "Show me the Gym" (User forgot unit)
@@ -63,7 +75,7 @@ export default function LobbyPage() {
   };
 
   return (
-    <div style={{ 
+    <div className="aura-hqBg" style={{ 
       height: '100vh', width: '100vw', backgroundColor: '#000',
       backgroundImage: `radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,1) 100%), url('${lobbyBg}')`,
       backgroundSize: 'cover', backgroundPosition: 'center',
@@ -81,7 +93,12 @@ export default function LobbyPage() {
           <motion.div
             key={flat.id}
             whileHover={{ scale: 1.05, backgroundColor: 'rgba(0, 242, 255, 0.1)' }}
-            onClick={() => router.push(`/dashboard?unit=${flat.id}`)}
+            onClick={() => {
+              setIntent({ type: "unit", unit: flat.id });
+              requestAnimationFrame(() => {
+                router.push(`/dashboard?unit=${flat.id}`);
+              });
+            }}
             style={{
               width: '260px', padding: '25px', backgroundColor: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px',
