@@ -20,10 +20,10 @@ export default function LobbyPage() {
 
   // 1. DEFINE GLOBAL ROOMS FOR FULL ACCESS
   const rooms = [
-    { name: "UTILITIES", path: "/utilities", keywords: ["bill", "electricity", "water", "gas", "power"] },
-    { name: "SECURITY", path: "/security", keywords: ["lock", "camera", "safe", "alarm"] },
-    { name: "AMENITIES", path: "/amenities", keywords: ["gym", "pool", "park", "lounge", "exercise", "workout"] },
-    { name: "COMMUNITY", path: "/community", keywords: ["chat", "neighbors", "event", "message"] }
+    { name: "UTILITIES", path: "/utilities", keywords: ["bill", "electricity", "water", "gas", "energy"] },
+    { name: "SECURITY", path: "/security", keywords: ["lock", "camera", "safe", "alarm", "entrance"] },
+    { name: "AMENITIES", path: "/amenities", keywords: ["gym", "pool", "park", "lounge", "workout"] },
+    { name: "COMMUNITY", path: "/community", keywords: ["chat", "neighbors", "event", "hub"] }
   ];
 
   const handleAiCommand = (e) => {
@@ -63,7 +63,7 @@ export default function LobbyPage() {
   };
 
   return (
-    <div style={{ 
+    <div className="aura-hqBg" style={{ 
       height: '100vh', width: '100vw', backgroundColor: '#000',
       backgroundImage: `radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,1) 100%), url('${lobbyBg}')`,
       backgroundSize: 'cover', backgroundPosition: 'center',

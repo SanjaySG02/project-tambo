@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation"; // 1. Added useSearchParams
 import { motion } from "framer-motion";
 import { ArrowLeft, Dumbbell, Waves, Coffee, TreePine } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 
 const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 const amenitiesBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`;
@@ -25,7 +25,15 @@ function AmenitiesRoomContent() {
   const searchParams = useSearchParams();
 
   // 2. Grabs the unit number from the URL
-  const unitNumber = searchParams.get('unit') || "000";
+  const unitNumber = searchParams.get('unit');
+
+  useEffect(() => {
+    if (!unitNumber) router.push("/");
+  }, [unitNumber, router]);
+
+  if (!unitNumber) {
+    return <div className="aura-hqBg" style={amenitiesContainerStyle} />;
+  }
 
   const cards = [
     { title: "GYM", desc: "Level 2 • 24/7", icon: <Dumbbell />, color: "#3b82f6" },
@@ -35,7 +43,7 @@ function AmenitiesRoomContent() {
   ];
 
   return (
-    <div style={amenitiesContainerStyle}>
+    <div className="aura-hqBg" style={amenitiesContainerStyle}>
       
       {/* 3. UNIT HUD: Shows which resident is accessing amenities */}
       <div style={{ 

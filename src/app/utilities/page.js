@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation"; // 1. Added useSearchParams
 import { motion } from "framer-motion";
 import { ArrowLeft, Zap, Droplets, Flame, Sun } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 
 const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 const utilitiesBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`;
@@ -23,7 +23,15 @@ function UtilitiesRoomContent() {
   const searchParams = useSearchParams();
 
   // 2. Capture the unit number from the URL
-  const unitNumber = searchParams.get('unit') || "000";
+  const unitNumber = searchParams.get('unit');
+
+  useEffect(() => {
+    if (!unitNumber) router.push("/");
+  }, [unitNumber, router]);
+
+  if (!unitNumber) {
+    return <div className="aura-hqBg" style={utilitiesContainerStyle} />;
+  }
 
   const stats = [
     { name: "Electricity", icon: <Zap />, value: "12.4", unit: "kWh", status: "Normal", color: "#facc15" },
@@ -33,7 +41,7 @@ function UtilitiesRoomContent() {
   ];
 
   return (
-    <div style={utilitiesContainerStyle}>
+    <div className="aura-hqBg" style={utilitiesContainerStyle}>
 
       {/* 3. DYNAMIC UNIT HUD */}
       <div style={{ 
