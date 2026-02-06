@@ -7,12 +7,12 @@ import {
   useAnimationControls,
 } from "framer-motion";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { LayoutRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { useEffect, useMemo, useRef } from "react";
 import {
   TransitionIntentProvider,
   useTransitionIntent,
 } from "../components/aura/transition-intent";
+import FrozenRoute from "../components/FrozenRoute";
 
 const DOOR_EXIT_OFFSETS = {
   utilities: { x: -120, y: -10 },
@@ -20,16 +20,6 @@ const DOOR_EXIT_OFFSETS = {
   amenities: { x: -80, y: 30 },
   community: { x: 80, y: 30 },
 };
-
-function FrozenRoute({ children }) {
-  const context = useContext(LayoutRouterContext);
-  const [frozen] = useState(context);
-  return (
-    <LayoutRouterContext.Provider value={frozen}>
-      {children}
-    </LayoutRouterContext.Provider>
-  );
-}
 
 function buildEnter(intent) {
   const base = {
