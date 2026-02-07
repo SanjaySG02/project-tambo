@@ -44,7 +44,7 @@ function buildVariants(intent) {
       x: enterDrift.x,
       y: enterDrift.y,
       z: -140,
-      filter: "blur(2px)",
+      filter: "blur(1.5px)",
     },
     center: {
       opacity: 1,
@@ -58,7 +58,7 @@ function buildVariants(intent) {
         duration: 0.78,
         ease: SMASH_EASE_OUT,
         opacity: { duration: 0.5, ease: SMASH_EASE_OUT },
-        filter: { duration: 0.5, ease: SMASH_EASE_OUT },
+        filter: { duration: 0.42, ease: SMASH_EASE_OUT },
       },
     },
     exit: {
@@ -67,13 +67,13 @@ function buildVariants(intent) {
       x: drift.x,
       y: drift.y,
       z: 190,
-      filter: "blur(4px)",
+      filter: "blur(3px)",
       transition: {
         type: "tween",
         duration: 0.86,
         ease: SMASH_EASE_IN,
         opacity: { duration: 0.5, ease: SMASH_EASE_IN },
-        filter: { duration: 0.5, ease: SMASH_EASE_IN },
+        filter: { duration: 0.35, ease: SMASH_EASE_IN },
       },
     },
   };
