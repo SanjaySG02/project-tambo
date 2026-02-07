@@ -5,11 +5,9 @@ import {
   MotionConfig,
   motion,
   useAnimationControls,
-  useIsPresent,
 } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { LayoutRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   TransitionIntentProvider,
   useTransitionIntent,
@@ -23,108 +21,23 @@ const DOOR_EXIT_OFFSETS = {
   community: { x: 80, y: 30 },
 };
 
-const CAMERA_PERSPECTIVE = 1400;
+function buildExit(intent, routeTransition) {
+  const base = {
+    opacity: 0,
+    scale: 1.1,
+    transition: routeTransition,
+  };
 
-const SMASH_EASE_OUT = [0.16, 1, 0.3, 1];
-const SMASH_EASE_IN = [0.7, 0, 0.84, 0];
-
-function getIntentDrift(intent) {
-  if (!intent || intent.type !== "door") return { x: 0, y: 0 };
-  return DOOR_EXIT_OFFSETS[intent.sector] || { x: 0, y: 0 };
-}
-
-function buildVariants(intent) {
-  const drift = getIntentDrift(intent);
-  const enterDrift = { x: drift.x * -0.18, y: drift.y * -0.18 };
+  if (!intent || intent.type !== "door") return base;
+  const offset = DOOR_EXIT_OFFSETS[intent.sector];
+  if (!offset) return base;
 
   return {
-    enter: {
-      opacity: 0,
-      scale: 0.985,
-      x: enterDrift.x,
-      y: enterDrift.y,
-      z: -140,
-      filter: "blur(1.5px)",
-    },
-    center: {
-      opacity: 1,
-      scale: 1,
-      x: 0,
-      y: 0,
-      z: 0,
-      filter: "blur(0px)",
-      transition: {
-        type: "tween",
-        duration: 0.78,
-        ease: SMASH_EASE_OUT,
-        opacity: { duration: 0.5, ease: SMASH_EASE_OUT },
-        filter: { duration: 0.42, ease: SMASH_EASE_OUT },
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 1.045,
-      x: drift.x,
-      y: drift.y,
-      z: 190,
-      filter: "blur(3px)",
-      transition: {
-        type: "tween",
-        duration: 0.86,
-        ease: SMASH_EASE_IN,
-        opacity: { duration: 0.5, ease: SMASH_EASE_IN },
-        filter: { duration: 0.35, ease: SMASH_EASE_IN },
-      },
-    },
+    ...base,
+    x: offset.x,
+    y: offset.y,
+    scale: 1.18,
   };
-}
-
-function FrozenRoute({ children }) {
-  const context = useContext(LayoutRouterContext);
-  const [frozen] = useState(context);
-  return (
-    <LayoutRouterContext.Provider value={frozen}>
-      {children}
-    </LayoutRouterContext.Provider>
-  );
-}
-
-function RouteLayer({
-  children,
-  variants,
-  transformOrigin,
-  initial,
-  onEntered,
-}) {
-  const isPresent = useIsPresent();
-
-  return (
-    <motion.div
-      initial={initial}
-      animate="center"
-      exit="exit"
-      variants={variants}
-      onAnimationComplete={(definition) => {
-        if (definition !== "center") return;
-        if (!isPresent) return;
-        onEntered();
-      }}
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        overflow: "hidden",
-        pointerEvents: isPresent ? "auto" : "none",
-        willChange: "transform, opacity, filter",
-        backfaceVisibility: "hidden",
-        transformOrigin,
-        transformStyle: "preserve-3d",
-      }}
-    >
-      <FrozenRoute>{children}</FrozenRoute>
-    </motion.div>
-  );
 }
 
 function AnimatedRoute({ children }) {
@@ -138,6 +51,12 @@ function AnimatedRoute({ children }) {
     [pathname, queryString],
   );
 
+  const routeTransition = {
+    type: "tween",
+    duration: 0.4,
+    ease: [0.22, 1, 0.36, 1],
+  };
+
   const lensFlareControls = useAnimationControls();
   const hasMounted = useRef(false);
 
@@ -148,10 +67,8 @@ function AnimatedRoute({ children }) {
     }
 
     lensFlareControls.start({
-      opacity: 0.22,
-      y: -14,
-      scale: 1.06,
-      transition: { duration: 0.25, ease: SMASH_EASE_OUT },
+      opacity: 0.2,
+      transition: { duration: 0.2, ease: "easeOut" },
     });
   }, [transitionKey, lensFlareControls]);
 
@@ -163,45 +80,46 @@ function AnimatedRoute({ children }) {
       community: "75% 70%",
     }[intent?.sector] || "50% 50%";
 
-  const variants = useMemo(() => buildVariants(intent), [intent]);
-
   return (
     <MotionConfig reducedMotion="user">
       <div className="aura-shell">
         <motion.div
           aria-hidden="true"
           className="aura-lensFlare"
-          initial={{ opacity: 0.6, y: 0, scale: 1 }}
+          initial={{ opacity: 0.6 }}
           animate={lensFlareControls}
         />
 
-        <div
-          style={{
-            position: "relative",
-            height: "100vh",
-            width: "100%",
-            perspective: `${CAMERA_PERSPECTIVE}px`,
-          }}
-        >
-          <AnimatePresence mode="sync" initial={false} onExitComplete={clearIntent}>
-            <RouteLayer
-              key={transitionKey}
-              variants={variants}
-              transformOrigin={transformOrigin}
-              initial="enter"
-              onEntered={() => {
-                lensFlareControls.start({
-                  opacity: 0.6,
-                  y: 0,
-                  scale: 1,
-                  transition: { duration: 0.35, ease: SMASH_EASE_OUT },
-                });
-              }}
-            >
-              {children}
-            </RouteLayer>
-          </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait" initial={false} onExitComplete={clearIntent}>
+          <motion.div
+            key={transitionKey}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              transition: routeTransition,
+            }}
+            exit={buildExit(intent, routeTransition)}
+            onAnimationComplete={(definition) => {
+              if (definition !== "animate") return;
+              lensFlareControls.start({
+                opacity: 0.6,
+                transition: { duration: 0.25, ease: "easeOut" },
+              });
+            }}
+            style={{
+              width: "100%",
+              height: "100vh",
+              overflow: "hidden",
+              willChange: "transform, opacity",
+              backfaceVisibility: "hidden",
+              transformOrigin,
+              transformStyle: "preserve-3d",
+            }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </MotionConfig>
   );
