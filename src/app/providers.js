@@ -148,33 +148,107 @@ function AuthGate({ children }) {
 }
 
 function HistoryGuard() {
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { user, isReady } = useAuth();
+  const lastPathRef = useRef("");
+  const currentPathRef = useRef(pathname);
+  const roomPaths = useRef([
+    "/utilities",
+    "/security",
+    "/amenities",
+    "/community",
+  ]);
+  const currentIdxRef = useRef(0);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const markerKey = "tambo.history.guard";
-    if (!window.sessionStorage.getItem(markerKey)) {
-      window.sessionStorage.setItem(markerKey, "1");
-      window.history.pushState(
-        { ...(window.history.state || {}), __app: true, __guard: true },
-        "",
-        window.location.href,
-      );
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const state = window.history.state || {};
-    if (!state.__app) {
-      window.history.replaceState(
-        { ...state, __app: true },
-        "",
-        window.location.href,
-      );
-    }
+    currentPathRef.current = pathname;
+    const queryString = searchParams.toString();
+    lastPathRef.current = queryString
+      ? `${pathname}?${queryString}`
+      : pathname;
   }, [pathname, searchParams]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = "tambo.history.idx";
+    const raw = window.sessionStorage.getItem(key);
+    const nextIdx = raw ? Number(raw) + 1 : 1;
+    window.sessionStorage.setItem(key, String(nextIdx));
+    const state = window.history.state || {};
+    window.history.replaceState(
+      { ...state, __app: true, __idx: nextIdx },
+      "",
+      window.location.href,
+    );
+    currentIdxRef.current = nextIdx;
+  }, [pathname, searchParams]);
+
+  useEffect(() => {
+    if (!isReady) return undefined;
+    if (typeof window === "undefined") return undefined;
+
+    const handlePopState = () => {
+      const prevPath = (lastPathRef.current || "").split("?")[0];
+      const nextPath = window.location.pathname;
+      const currentPath = currentPathRef.current;
+      const isRoom = roomPaths.current.includes(nextPath);
+      const nextIdx = window.history.state?.__idx ?? -1;
+      const direction = nextIdx < currentIdxRef.current ? "back" : "forward";
+      currentIdxRef.current = nextIdx;
+
+      if (currentPath === "/login" && direction === "forward") {
+        router.replace("/login");
+        return;
+      }
+
+      if (prevPath === "/login" && direction === "back") {
+        window.location.href = "https://www.google.com";
+        return;
+      }
+
+      if (prevPath === "/login" && direction === "forward") {
+        router.replace("/login");
+        return;
+      }
+
+      if (nextPath === "/login" && direction === "forward") {
+        router.replace("/login");
+        return;
+      }
+
+      if (user?.role === "user") {
+        if (prevPath === "/dashboard" && direction === "back") {
+          router.replace("/login");
+          return;
+        }
+        if (roomPaths.current.includes(prevPath) && direction === "back") {
+          router.replace(`/dashboard?unit=${user.unit}`);
+          return;
+        }
+        if (nextPath === "/" && direction === "back") {
+          router.replace("/login");
+          return;
+        }
+        if (isRoom && prevPath === "/login") {
+          router.replace("/login");
+          return;
+        }
+      }
+
+      if (user?.role === "admin") {
+        if (prevPath === "/" && direction === "back") {
+          router.replace("/login");
+        }
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isReady, user, router]);
 
   return null;
 }
