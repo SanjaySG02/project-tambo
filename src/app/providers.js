@@ -120,7 +120,6 @@ function RouteLayer({
         backfaceVisibility: "hidden",
         transformOrigin,
         transformStyle: "preserve-3d",
-        transformPerspective: CAMERA_PERSPECTIVE,
       }}
     >
       <FrozenRoute>{children}</FrozenRoute>
@@ -176,7 +175,14 @@ function AnimatedRoute({ children }) {
           animate={lensFlareControls}
         />
 
-        <div style={{ position: "relative", height: "100vh", width: "100%" }}>
+        <div
+          style={{
+            position: "relative",
+            height: "100vh",
+            width: "100%",
+            perspective: `${CAMERA_PERSPECTIVE}px`,
+          }}
+        >
           <AnimatePresence mode="sync" initial={false} onExitComplete={clearIntent}>
             <RouteLayer
               key={transitionKey}
