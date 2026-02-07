@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Suspense, useEffect, useState } from "react";
 import { ArrowLeft, Lock, Unlock } from "lucide-react";
 import { useAuth } from "../../lib/auth";
+import { getUnitSnapshot } from "../../lib/residence-data";
 
 const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 const securityBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`;
@@ -26,6 +27,9 @@ function SecurityRoomContent() {
   
   const unitNumber = searchParams.get('unit');
   const [isLocked, setIsLocked] = useState(true);
+
+  const snapshot = unitNumber ? getUnitSnapshot(unitNumber) : null;
+  const security = snapshot?.security;
 
   useEffect(() => {
     if (!unitNumber) router.push("/");
@@ -140,8 +144,11 @@ function SecurityRoomContent() {
         <h2 style={{ fontSize: '32px', marginBottom: '10px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
           Main Entrance: {isLocked ? "LOCKED" : "UNLOCKED"}
         </h2>
-        <p style={{ color: '#aaa', marginBottom: '40px', letterSpacing: '1px' }}>
+        <p style={{ color: '#aaa', marginBottom: '10px', letterSpacing: '1px' }}>
           Biometric Authorization for Unit {unitNumber} Verified
+        </p>
+        <p style={{ color: '#888', marginBottom: '40px', letterSpacing: '1px' }}>
+          Last Scan: {security?.lastScan || "--"} • Cameras Online: {security?.camerasOnline ?? "--"} • Alerts: {security?.alerts ?? "--"}
         </p>
 
         <motion.button 

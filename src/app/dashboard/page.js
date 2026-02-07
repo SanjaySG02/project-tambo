@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { useEffect, Suspense, useRef, useState } from "react";
+import { useEffect, Suspense, useMemo, useRef, useState } from "react";
 import { Send, Sparkles } from "lucide-react";
 import { useTransitionIntent } from "../../components/aura/transition-intent";
 import { useAuth } from "../../lib/auth";
@@ -27,19 +27,22 @@ function HallwayContent() {
   const isHydrated = useIsHydrated();
 
   const [command, setCommand] = useState("");
-  const [aiMessage, setAiMessage] = useState("System Authenticating...");
+  const [aiMessage, setAiMessage] = useState("Navigator online. Ask for a room or unit.");
   const [isNavigating, setIsNavigating] = useState(false);
 
   const urlUnit = searchParams.get("unit");
 
   const bgImage = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 
-  const doors = [
-    { name: "UTILITIES", sector: "utilities", color: "#00f2ff", path: "/utilities", keywords: ["bill", "electricity", "water", "gas", "energy"] },
-    { name: "SECURITY", sector: "security", color: "#ff0055", path: "/security", keywords: ["lock", "camera", "safe", "alarm", "entrance"] },
-    { name: "AMENITIES", sector: "amenities", color: "#00ff88", path: "/amenities", keywords: ["gym", "pool", "park", "lounge", "workout"] },
-    { name: "COMMUNITY", sector: "community", color: "#ffaa00", path: "/community", keywords: ["chat", "neighbors", "event", "hub"] }
-  ];
+  const doors = useMemo(
+    () => [
+      { name: "UTILITIES", sector: "utilities", color: "#00f2ff", path: "/utilities", keywords: ["bill", "electricity", "water", "gas", "energy"] },
+      { name: "SECURITY", sector: "security", color: "#ff0055", path: "/security", keywords: ["lock", "camera", "safe", "alarm", "entrance"] },
+      { name: "AMENITIES", sector: "amenities", color: "#00ff88", path: "/amenities", keywords: ["gym", "pool", "park", "lounge", "workout"] },
+      { name: "COMMUNITY", sector: "community", color: "#ffaa00", path: "/community", keywords: ["chat", "neighbors", "event", "hub"] }
+    ],
+    [],
+  );
   const allowedUnits = user?.role === "admin"
     ? ["101", "102", "201", "202"]
     : user?.unit
@@ -299,7 +302,7 @@ function HallwayContent() {
             <input 
               value={command}
               onChange={(e) => setCommand(e.target.value)}
-              placeholder="Go to room... (e.g. Gym 201)"
+              placeholder="Try: 'Utilities 202' or 'Go to Gym'"
               style={{
                 flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
                 padding: '12px 20px', borderRadius: '12px', color: 'white', outline: 'none'

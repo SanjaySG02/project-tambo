@@ -1,22 +1,20 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 const CREDENTIALS = [
   { username: "admin", password: "Admin@123", role: "admin" },
   { username: "user101", password: "User@101", role: "user", unit: "101" },
+  { username: "user102", password: "User@102", role: "user", unit: "102" },
   { username: "user201", password: "User@201", role: "user", unit: "201" },
+  { username: "user202", password: "User@202", role: "user", unit: "202" },
 ];
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    setIsReady(true);
-  }, []);
+  const [isReady] = useState(true);
 
   const login = useCallback((username, password) => {
     const match = CREDENTIALS.find(

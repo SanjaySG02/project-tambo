@@ -7,12 +7,16 @@ import {
   useAnimationControls,
 } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { TamboProvider } from "@tambo-ai/react";
 import {
   TransitionIntentProvider,
   useTransitionIntent,
 } from "../components/aura/transition-intent";
 import { AuthProvider, useAuth } from "../lib/auth";
+import { AppAssistant } from "../components/tambo/app-assistant";
+import { components } from "../lib/tambo";
+import { UNIT_IDS, getUnitSnapshot } from "../lib/residence-data";
 
 const DOOR_EXIT_OFFSETS = {
   utilities: { x: -120, y: -10 },
@@ -253,13 +257,157 @@ function HistoryGuard() {
   return null;
 }
 
+function TamboShell({ children }) {
+  const { user } = useAuth();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const apiKey = process.env.NEXT_PUBLIC_TAMBO_API_KEY;
+
+  const unitIds = useMemo(() => {
+    if (user?.role === "admin") return UNIT_IDS;
+    if (user?.unit) return [user.unit];
+    return [];
+  }, [user]);
+
+  const listResources = useCallback(
+    async (search) => {
+      const query = search?.toLowerCase() || "";
+      return unitIds
+        .filter((id) => id.includes(query))
+        .map((id) => ({
+          uri: `file:///units/${id}.json`,
+          name: `Unit ${id} Snapshot`,
+          description: `Current snapshot data for unit ${id}.`,
+          mimeType: "application/json",
+        }));
+    },
+    [unitIds],
+  );
+
+  const getResource = useCallback(async (uri) => {
+    const unitId = uri.split("/").pop()?.replace(".json", "");
+    const snapshot = unitId ? getUnitSnapshot(unitId) : null;
+    const payload = snapshot
+      ? JSON.stringify(snapshot, null, 2)
+      : JSON.stringify({ error: "Unit not found" }, null, 2);
+
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/json",
+          text: payload,
+        },
+      ],
+    };
+  }, []);
+
+  const activeUnitId = useMemo(() => {
+    const unitFromUrl = searchParams.get("unit");
+    if (unitFromUrl) return unitFromUrl;
+    if (user?.unit) return user.unit;
+    return null;
+  }, [searchParams, user]);
+
+  const activeSnapshot = useMemo(() => {
+    if (!activeUnitId) return null;
+    return getUnitSnapshot(activeUnitId);
+  }, [activeUnitId]);
+
+  const tamboContextKey = useMemo(() => {
+    if (user?.role === "admin") return "role:admin";
+    if (user?.role === "user") return `role:user:unit:${user.unit || "none"}`;
+    return "role:guest";
+  }, [user]);
+
+  const allSnapshots = useMemo(() => {
+    if (user?.role !== "admin") return null;
+    return UNIT_IDS.map((id) => getUnitSnapshot(id)).filter(Boolean);
+  }, [user]);
+
+  const electricityChartItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    return snapshots.map((snapshot) => ({
+      label: snapshot?.unitId ? `Unit ${snapshot.unitId}` : "Unknown",
+      value: snapshot.utilities?.electricityKwh ?? 0,
+      unit: "kWh",
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const contextHelpers = useMemo(
+    () => ({
+      userRole: () => ({ key: "userRole", value: user?.role || "guest" }),
+      userUnit: () => ({ key: "userUnit", value: user?.unit || "none" }),
+      activeUnit: () => ({ key: "activeUnit", value: activeUnitId || "none" }),
+      activeUnitSnapshot: () => ({
+        key: "activeUnitSnapshot",
+        value: activeSnapshot
+          ? JSON.stringify(activeSnapshot)
+          : "No active unit snapshot available.",
+      }),
+      allUnitSnapshots: () => ({
+        key: "allUnitSnapshots",
+        value: allSnapshots ? JSON.stringify(allSnapshots) : "User-only scope.",
+      }),
+      assistantGuidance: () => ({
+        key: "assistantGuidance",
+        value:
+          "User speaks in plain English. Provide a concise analysis report using only on-site snapshot data. When a report is requested, always include an AnalyticsBarChart with items derived from electricityKwh per unit. Do not ask follow-up questions about time ranges or extra requirements.",
+      }),
+      electricityChartItems: () => ({
+        key: "electricityChartItems",
+        value: JSON.stringify(
+          {
+            title: "Electricity Usage (kWh)",
+            subtitle: "Latest snapshot across units",
+            items: electricityChartItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      currentPage: () => ({ key: "page", value: window.location.pathname }),
+    }),
+      [user, activeUnitId, activeSnapshot, allSnapshots, electricityChartItems],
+  );
+
+  if (!apiKey) {
+    return children;
+  }
+
+  if (pathname === "/login") {
+    return children;
+  }
+
+  return (
+    <TamboProvider
+      apiKey={apiKey}
+      components={components}
+      listResources={listResources}
+      getResource={getResource}
+      contextHelpers={contextHelpers}
+      contextKey={tamboContextKey}
+    >
+      {children}
+      <AppAssistant />
+    </TamboProvider>
+  );
+}
+
 export default function Providers({ children }) {
   return (
     <AuthProvider>
       <TransitionIntentProvider>
         <AuthGate>
-          <HistoryGuard />
-          <AnimatedRoute>{children}</AnimatedRoute>
+          <TamboShell>
+            <HistoryGuard />
+            <AnimatedRoute>{children}</AnimatedRoute>
+          </TamboShell>
         </AuthGate>
       </TransitionIntentProvider>
     </AuthProvider>

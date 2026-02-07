@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Zap, Droplets, Flame, Sun } from "lucide-react";
 import { Suspense, useEffect } from "react";
 import { useAuth } from "../../lib/auth";
+import { getUnitSnapshot } from "../../lib/residence-data";
 
 const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 const utilitiesBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`;
@@ -42,11 +43,42 @@ function UtilitiesRoomContent() {
     return <div className="aura-hqBg" style={utilitiesContainerStyle} />;
   }
 
+  const snapshot = getUnitSnapshot(unitNumber);
+  const utilities = snapshot?.utilities;
+
   const stats = [
-    { name: "Electricity", icon: <Zap />, value: "12.4", unit: "kWh", status: "Normal", color: "#facc15" },
-    { name: "Water", icon: <Droplets />, value: "450", unit: "Litres", status: "Optimal", color: "#60a5fa" },
-    { name: "Natural Gas", icon: <Flame />, value: "0.8", unit: "m³", status: "Low", color: "#fb923c" },
-    { name: "Solar Power", icon: <Sun />, value: "+2.1", unit: "kWh", status: "Charging", color: "#4ade80" },
+    {
+      name: "Electricity",
+      icon: <Zap />,
+      value: utilities ? String(utilities.electricityKwh) : "--",
+      unit: "kWh",
+      status: "Normal",
+      color: "#facc15",
+    },
+    {
+      name: "Water",
+      icon: <Droplets />,
+      value: utilities ? String(utilities.waterLitres) : "--",
+      unit: "Litres",
+      status: "Optimal",
+      color: "#60a5fa",
+    },
+    {
+      name: "Natural Gas",
+      icon: <Flame />,
+      value: utilities ? String(utilities.gasM3) : "--",
+      unit: "m³",
+      status: "Low",
+      color: "#fb923c",
+    },
+    {
+      name: "Solar Power",
+      icon: <Sun />,
+      value: utilities ? `+${utilities.solarKwh}` : "--",
+      unit: "kWh",
+      status: "Charging",
+      color: "#4ade80",
+    },
   ];
 
   return (

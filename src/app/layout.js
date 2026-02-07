@@ -1,6 +1,6 @@
 "use client";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Suspense, useContext, useRef } from "react";
+import { Suspense, useContext, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { LayoutRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 // --- HELPER: FREEZES THE OLD PAGE TO REMOVE OVERLAP ---
 function FrozenRoute({ children }) {
   const context = useContext(LayoutRouterContext);
-  const frozen = useRef(context).current;
+  const [frozen] = useState(context);
   return (
     <LayoutRouterContext.Provider value={frozen}>
       {children}

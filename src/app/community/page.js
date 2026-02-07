@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, MessageSquare, Calendar, Users, Bell, Send } from "lucide-react";
 import { Suspense, useEffect } from "react";
 import { useAuth } from "../../lib/auth";
+import { UNIT_IDS, getUnitSnapshot } from "../../lib/residence-data";
 
 const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 const communityBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`;
@@ -42,11 +43,28 @@ function CommunityRoomContent() {
     return <div className="aura-hqBg" style={communityContainerStyle} />;
   }
 
-  const announcements = [
-    { id: 1, title: "Rooftop BBQ Night", date: "Tomorrow, 7 PM", type: "Event", icon: <Calendar size={18} />, color: "#ffaa00" },
-    { id: 2, title: "Elevator Maintenance", date: "Feb 10th", type: "Notice", icon: <Bell size={18} />, color: "#ef4444" },
-    { id: 3, title: "Yoga Class", date: "Every Sunday", type: "Activity", icon: <Users size={18} />, color: "#00ff88" },
-  ];
+  const snapshot = getUnitSnapshot(unitNumber);
+  const announcements = snapshot?.community?.announcements || [];
+  const mood = snapshot?.community?.mood || "--";
+
+  const otherUnits = UNIT_IDS.filter((id) => id !== unitNumber).slice(0, 2);
+  const neighborA = otherUnits[0] || unitNumber;
+  const neighborB = otherUnits[1] || unitNumber;
+  const neighborASnapshot = getUnitSnapshot(neighborA);
+  const neighborBSnapshot = getUnitSnapshot(neighborB);
+  const neighborAName = neighborASnapshot?.resident || `Resident ${neighborA}`;
+  const neighborBName = neighborBSnapshot?.resident || `Resident ${neighborB}`;
+
+  const announcementCards = announcements.map((text, index) => {
+    const fallback = { icon: <Calendar size={18} />, color: "#ffaa00" };
+    if (text.toLowerCase().includes("maintenance")) {
+      return { id: index + 1, title: text, icon: <Bell size={18} />, color: "#ef4444" };
+    }
+    if (text.toLowerCase().includes("yoga") || text.toLowerCase().includes("class")) {
+      return { id: index + 1, title: text, icon: <Users size={18} />, color: "#00ff88" };
+    }
+    return { id: index + 1, title: text, ...fallback };
+  });
 
   return (
     <div className="aura-hqBg" style={communityContainerStyle}>
@@ -130,7 +148,7 @@ function CommunityRoomContent() {
         <div>
           <h2 style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "2px", marginBottom: "20px" }}>NOTICE BOARD</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-            {announcements.map((item) => (
+            {announcementCards.map((item) => (
               <motion.div 
                 key={item.id}
                 whileHover={{ x: 10, backgroundColor: "rgba(255,255,255,0.1)" }}
@@ -148,7 +166,7 @@ function CommunityRoomContent() {
                 <div style={{ color: item.color }}>{item.icon}</div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: "16px" }}>{item.title}</h3>
-                  <p style={{ margin: "5px 0 0", fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>{item.date}</p>
+                  <p style={{ margin: "5px 0 0", fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>Unit mood: {mood}</p>
                 </div>
               </motion.div>
             ))}
@@ -169,17 +187,27 @@ function CommunityRoomContent() {
         }}>
           <div style={{ overflowY: "auto", paddingRight: "10px" }}>
             <div style={{ marginBottom: "20px" }}>
-              <span style={{ color: "#ffaa00", fontSize: "12px", fontWeight: "bold" }}>Sanjay (Unit 402)</span>
-              <p style={{ margin: "5px 0", color: "#ddd" }}>Does anyone have a spare drill?</p>
+              <span style={{ color: "#ffaa00", fontSize: "12px", fontWeight: "bold" }}>
+                {neighborAName} (Unit {neighborA})
+              </span>
+              <p style={{ margin: "5px 0", color: "#ddd" }}>
+                Anyone else attending the rooftop BBQ?
+              </p>
             </div>
             <div style={{ marginBottom: "20px" }}>
-              <span style={{ color: "#00ff88", fontSize: "12px", fontWeight: "bold" }}>Elena (Unit 105)</span>
-              <p style={{ margin: "5px 0", color: "#ddd" }}>I have one! Come by at 6 PM.</p>
+              <span style={{ color: "#00ff88", fontSize: "12px", fontWeight: "bold" }}>
+                {neighborBName} (Unit {neighborB})
+              </span>
+              <p style={{ margin: "5px 0", color: "#ddd" }}>
+                I can bring chairs if needed.
+              </p>
             </div>
             {/* 5. USER'S OWN MESSAGE CONTEXT */}
             <div>
               <span style={{ color: "#00f2ff", fontSize: "12px", fontWeight: "bold" }}>You (Unit {unitNumber})</span>
-              <p style={{ margin: "5px 0", color: "#ddd", fontStyle: "italic" }}>System connected...</p>
+              <p style={{ margin: "5px 0", color: "#ddd", fontStyle: "italic" }}>
+                Connected to the Unit {unitNumber} community feed.
+              </p>
             </div>
           </div>
 

@@ -12,6 +12,8 @@
  */
 
 import type { TamboComponent } from "@tambo-ai/react";
+import { z } from "zod";
+import { AnalyticsBarChart } from "../components/tambo/analytics-bar-chart";
 
 
 /**
@@ -40,7 +42,39 @@ import type { TamboComponent } from "@tambo-ai/react";
  * ];
  * ```
  */
-export const components: TamboComponent[] = [];
+export const components: TamboComponent[] = [
+	{
+		name: "AnalyticsBarChart",
+		description: "Renders a bar chart for report data values",
+		component: AnalyticsBarChart,
+		propsSchema: z.object({
+			title: z.string().optional(),
+			subtitle: z.string().optional(),
+			items: z
+				.array(
+					z.object({
+						label: z.preprocess(
+							(val) => (typeof val === "string" && val.trim() ? val : "Unknown"),
+							z.string(),
+						),
+						value: z.preprocess(
+							(val) => (typeof val === "number" ? val : 0),
+							z.number(),
+						),
+						unit: z.preprocess(
+							(val) => (typeof val === "string" ? val : undefined),
+							z.string().optional(),
+						),
+						color: z.preprocess(
+							(val) => (typeof val === "string" ? val : undefined),
+							z.string().optional(),
+						),
+					}),
+				)
+				.default([]),
+		}),
+	},
+];
 
 // Import your custom components that utilize the Tambo SDK
 // import { CustomChart } from "../components/tambo/custom-chart";

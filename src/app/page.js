@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Building2, Home, Sparkles, Send } from "lucide-react";
 import { useTransitionIntent } from "../components/aura/transition-intent";
 import { useAuth } from "../lib/auth";
@@ -15,12 +15,15 @@ export default function LobbyPage() {
 
   const lobbyBg = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop";
 
-  const flats = [
-    { id: "101", type: "Studio", status: "Occupied" },
-    { id: "102", type: "Penthouse", status: "Vacant" },
-    { id: "201", type: "Deluxe", status: "Occupied" },
-    { id: "202", type: "Studio", status: "Maintenance" },
-  ];
+  const flats = useMemo(
+    () => [
+      { id: "101", type: "Studio", status: "Occupied" },
+      { id: "102", type: "Penthouse", status: "Vacant" },
+      { id: "201", type: "Deluxe", status: "Occupied" },
+      { id: "202", type: "Studio", status: "Maintenance" },
+    ],
+    [],
+  );
   const visibleFlats = user?.role === "admin"
     ? flats
     : flats.filter((flat) => flat.id === user?.unit);
