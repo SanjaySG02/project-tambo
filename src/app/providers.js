@@ -113,7 +113,7 @@ function RouteLayer({
         position: "absolute",
         inset: 0,
         width: "100%",
-        height: "100vh",
+        height: "100%",
         overflow: "hidden",
         pointerEvents: isPresent ? "auto" : "none",
         willChange: "transform, opacity, filter",
