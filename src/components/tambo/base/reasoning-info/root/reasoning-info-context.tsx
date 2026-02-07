@@ -11,6 +11,7 @@ interface ReasoningInfoRootContextValue {
   reasoningDurationMS: number | undefined;
   statusText: string;
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+  setScrollContainerNode: (node: HTMLDivElement | null) => void;
 }
 
 export const ReasoningInfoRootContext =

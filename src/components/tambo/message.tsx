@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { TamboThreadMessage, useTambo } from "@tambo-ai/react";
@@ -741,8 +742,14 @@ function ToolResultText({
 }) {
   if (!text) return null;
 
+  let parsed: unknown | null = null;
   try {
-    const parsed = JSON.parse(text);
+    parsed = JSON.parse(text);
+  } catch {
+    parsed = null;
+  }
+
+  if (parsed) {
     return (
       <pre
         className={cn(
@@ -754,11 +761,10 @@ function ToolResultText({
         </code>
       </pre>
     );
-  } catch {
-    // JSON parsing failed, render as markdown or plain text
-    if (!enableMarkdown) return text;
-    return <Streamdown components={markdownComponents}>{text}</Streamdown>;
   }
+
+  if (!enableMarkdown) return text;
+  return <Streamdown components={markdownComponents}>{text}</Streamdown>;
 }
 
 /**

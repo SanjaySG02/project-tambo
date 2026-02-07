@@ -75,7 +75,7 @@ export const ControlBar = React.forwardRef<HTMLDivElement, ControlBarProps>(
     return (
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger asChild>
-          <button className="fixed bottom-4 right-4 bg-background/50 backdrop-blur-sm border rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent/50 transition-colors">
+          <button className="fixed bottom-4 right-4 bg-background/50 backdrop-blur-[2px] border rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent/50 transition-colors">
             Talk to AI (
             <span suppressHydrationWarning>
               {hotkey.replace("mod", isMac ? "⌘" : "Ctrl")}
@@ -88,7 +88,7 @@ export const ControlBar = React.forwardRef<HTMLDivElement, ControlBarProps>(
           <Dialog.Content
             ref={ref}
             className={cn(
-              "fixed top-1/4 left-1/2 -translate-x-1/2 w-[440px] rounded-lg shadow-lg transition-all duration-200 outline-none",
+              "fixed top-1/4 left-1/2 -translate-x-1/2 w-110 rounded-lg shadow-lg transition-all duration-200 outline-none",
               className,
             )}
             {...props}
@@ -112,7 +112,7 @@ export const ControlBar = React.forwardRef<HTMLDivElement, ControlBarProps>(
                 </div>
               </div>
               {thread?.messages?.length > 0 && (
-                <ScrollableMessageContainer className="bg-background border rounded-lg p-4 max-h-[500px]">
+                <ScrollableMessageContainer className="bg-background border rounded-lg p-4 max-h-125">
                   <ThreadContent variant={variant}>
                     <ThreadContentMessages />
                   </ThreadContent>

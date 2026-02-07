@@ -50,10 +50,7 @@ export const ScrollableMessageContainer = React.forwardRef<
     }));
   }, [thread.messages]);
 
-  const generationStage = useMemo(
-    () => thread?.generationStage ?? GenerationStage.IDLE,
-    [thread?.generationStage],
-  );
+  const generationStage = thread?.generationStage ?? GenerationStage.IDLE;
 
   // Handle scroll events to detect user scrolling
   const handleScroll = useCallback(() => {
@@ -104,9 +101,9 @@ export const ScrollableMessageContainer = React.forwardRef<
       onScroll={handleScroll}
       className={cn(
         "flex-1 overflow-y-auto",
-        "[&::-webkit-scrollbar]:w-[6px]",
+        "[&::-webkit-scrollbar]:w-1.5",
         "[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30",
-        "[&::-webkit-scrollbar:horizontal]:h-[4px]",
+        "[&::-webkit-scrollbar:horizontal]:h-1",
         className,
       )}
       data-slot="scrollable-message-container"

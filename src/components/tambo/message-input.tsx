@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { ElicitationUI } from "@/components/tambo/elicitation-ui";
@@ -46,7 +47,6 @@ import {
 } from "./text-editor";
 
 // Lazy load DictationButton for code splitting (framework-agnostic alternative to next/dynamic)
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const LazyDictationButton = React.lazy(() => import("./dictation-button"));
 
 /**
@@ -978,7 +978,7 @@ const MessageInputPlainTextarea = ({
       onKeyDown={handleKeyDown}
       onPaste={handlePaste}
       className={cn(
-        "flex-1 p-3 rounded-t-lg bg-background text-foreground resize-none text-sm min-h-[82px] max-h-[40vh] focus:outline-none placeholder:text-muted-foreground/50",
+        "flex-1 p-3 rounded-t-lg bg-background text-foreground resize-none text-sm min-h-20.5 max-h-[40vh] focus:outline-none placeholder:text-muted-foreground/50",
         className,
       )}
       disabled={isPending || isUpdatingToken}
@@ -1398,7 +1398,7 @@ const ImageContextBadge: React.FC<ImageContextBadgeProps> = ({
   onToggle,
   onRemove,
 }) => (
-  <div className="relative group flex-shrink-0">
+  <div className="relative group shrink-0">
     <button
       type="button"
       onClick={onToggle}
@@ -1425,7 +1425,7 @@ const ImageContextBadge: React.FC<ImageContextBadgeProps> = ({
               decoding="async"
               className="absolute inset-0 w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
             <div className="absolute bottom-1 left-2 right-2 text-white text-xs font-medium truncate">
               {displayName}
             </div>
@@ -1438,7 +1438,7 @@ const ImageContextBadge: React.FC<ImageContextBadgeProps> = ({
           isExpanded ? "opacity-0" : "opacity-100 delay-100",
         )}
       >
-        <ImageIcon className="w-3.5 h-3.5 flex-shrink-0" />
+        <ImageIcon className="w-3.5 h-3.5 shrink-0" />
         <span className="truncate">{displayName}</span>
       </span>
     </button>

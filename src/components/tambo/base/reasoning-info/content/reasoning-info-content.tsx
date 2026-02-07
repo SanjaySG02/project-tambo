@@ -18,22 +18,20 @@ export const ReasoningInfoContent = React.forwardRef<
   HTMLDivElement,
   ReasoningInfoContentProps
 >(({ asChild, forceMount, children, ...props }, ref) => {
-  const { isExpanded, detailsId, scrollContainerRef } =
+  const { isExpanded, detailsId, setScrollContainerNode } =
     useReasoningInfoRootContext();
 
   // Combine refs
   const combinedRef = React.useCallback(
     (node: HTMLDivElement | null) => {
-      (
-        scrollContainerRef as React.MutableRefObject<HTMLDivElement | null>
-      ).current = node;
+      setScrollContainerNode(node);
       if (typeof ref === "function") {
         ref(node);
       } else if (ref) {
         ref.current = node;
       }
     },
-    [ref, scrollContainerRef],
+    [ref, setScrollContainerNode],
   );
 
   if (!forceMount && !isExpanded) {

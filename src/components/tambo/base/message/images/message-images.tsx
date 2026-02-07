@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Slot } from "@radix-ui/react-slot";
 import { getMessageImages } from "@/lib/thread-hooks";
 import * as React from "react";

@@ -53,8 +53,8 @@ export const ThreadContainer = React.forwardRef<
         // Sidebar spacing based on history position (unless disabled)
         !disableSidebarSpacing &&
           (historyPosition === "right"
-            ? "mr-[var(--sidebar-width,16rem)]"
-            : "ml-[var(--sidebar-width,16rem)]"),
+            ? "mr-(--sidebar-width,16rem)"
+            : "ml-(--sidebar-width,16rem)"),
 
         // Width constraints based on canvas presence (unless sidebar spacing disabled)
         !disableSidebarSpacing &&

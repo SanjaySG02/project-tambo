@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation"; // 1. Added useSea
 import { motion } from "framer-motion";
 import { ArrowLeft, Dumbbell, Waves, Coffee, TreePine } from "lucide-react";
 import { Suspense, useEffect } from "react";
+import { useAuth } from "../../lib/auth";
 
 const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 const amenitiesBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`;
@@ -23,6 +24,7 @@ const amenitiesContainerStyle = {
 function AmenitiesRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, logout } = useAuth();
 
   // 2. Grabs the unit number from the URL
   const unitNumber = searchParams.get('unit');
@@ -30,6 +32,13 @@ function AmenitiesRoomContent() {
   useEffect(() => {
     if (!unitNumber) router.push("/");
   }, [unitNumber, router]);
+
+  useEffect(() => {
+    if (!user || !unitNumber) return;
+    if (user.role === "user" && user.unit && unitNumber !== user.unit) {
+      router.replace(`/amenities?unit=${user.unit}`);
+    }
+  }, [user, unitNumber, router]);
 
   if (!unitNumber) {
     return <div className="aura-hqBg" style={amenitiesContainerStyle} />;
@@ -51,13 +60,54 @@ function AmenitiesRoomContent() {
         color: 'white', border: '1px solid rgba(255,255,255,0.2)', 
         padding: '8px 20px', borderRadius: '4px', fontSize: '10px',
         backgroundColor: 'rgba(0,0,0,0.6)', letterSpacing: '3px',
-        backdropFilter: 'blur(5px)', zIndex: 10
+        backdropFilter: 'blur(3px)', zIndex: 10
       }}>
         RESIDENT AUTH: <span style={{ color: '#00f2ff' }}>{unitNumber}</span>
       </div>
 
       {/* Header */}
-      <nav style={{ padding: '30px', display: 'flex', alignItems: 'center', gap: '20px', backdropFilter: 'blur(10px)' }}>
+      <nav style={{ padding: '30px', display: 'flex', alignItems: 'center', gap: '20px', backdropFilter: 'blur(4px)', position: 'relative', zIndex: 2 }}>
+        <div style={{ display: "flex", gap: "8px" }}>
+          {user?.role === "admin" ? (
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              style={{
+                background: "rgba(0,0,0,0.7)",
+                border: "1px solid rgba(0,242,255,0.5)",
+                color: "#eaffff",
+                padding: "8px 14px",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontSize: "11px",
+                letterSpacing: "2px",
+                boxShadow: "0 0 14px rgba(0,242,255,0.25)",
+              }}
+            >
+              HOME
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => {
+              logout();
+              router.replace("/login");
+            }}
+            style={{
+              background: "rgba(0,0,0,0.7)",
+              border: "1px solid rgba(255,80,120,0.6)",
+              color: "#ffe6ef",
+              padding: "8px 14px",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "11px",
+              letterSpacing: "2px",
+              boxShadow: "0 0 14px rgba(255,80,120,0.25)",
+            }}
+          >
+            LOG OUT
+          </button>
+        </div>
         <button 
           // 4. PERSISTENCE: Return to Dashboard with the Unit ID
           onClick={() => router.push(`/dashboard?unit=${unitNumber}`)}
@@ -93,7 +143,7 @@ function AmenitiesRoomContent() {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              backdropFilter: 'blur(15px)',
+              backdropFilter: 'blur(6px)',
               boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
               cursor: 'default'
             }}

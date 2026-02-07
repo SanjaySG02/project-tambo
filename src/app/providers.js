@@ -6,12 +6,13 @@ import {
   motion,
   useAnimationControls,
 } from "framer-motion";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 import {
   TransitionIntentProvider,
   useTransitionIntent,
 } from "../components/aura/transition-intent";
+import { AuthProvider, useAuth } from "../lib/auth";
 
 const DOOR_EXIT_OFFSETS = {
   utilities: { x: -120, y: -10 },
@@ -124,10 +125,69 @@ function AnimatedRoute({ children }) {
   );
 }
 
+function AuthGate({ children }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, isReady } = useAuth();
+
+  useEffect(() => {
+    if (!isReady) return;
+    if (!user && pathname !== "/login") {
+      router.replace("/login");
+      return;
+    }
+    if (user && user.role === "user" && user.unit && pathname === "/") {
+      router.replace(`/dashboard?unit=${user.unit}`);
+      return;
+    }
+  }, [isReady, user, pathname, router]);
+
+  if (!isReady) return null;
+  if (!user && pathname !== "/login") return null;
+  return children;
+}
+
+function HistoryGuard() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const markerKey = "tambo.history.guard";
+    if (!window.sessionStorage.getItem(markerKey)) {
+      window.sessionStorage.setItem(markerKey, "1");
+      window.history.pushState(
+        { ...(window.history.state || {}), __app: true, __guard: true },
+        "",
+        window.location.href,
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const state = window.history.state || {};
+    if (!state.__app) {
+      window.history.replaceState(
+        { ...state, __app: true },
+        "",
+        window.location.href,
+      );
+    }
+  }, [pathname, searchParams]);
+
+  return null;
+}
+
 export default function Providers({ children }) {
   return (
-    <TransitionIntentProvider>
-      <AnimatedRoute>{children}</AnimatedRoute>
-    </TransitionIntentProvider>
+    <AuthProvider>
+      <TransitionIntentProvider>
+        <AuthGate>
+          <HistoryGuard />
+          <AnimatedRoute>{children}</AnimatedRoute>
+        </AuthGate>
+      </TransitionIntentProvider>
+    </AuthProvider>
   );
 }

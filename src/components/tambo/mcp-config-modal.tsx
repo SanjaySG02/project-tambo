@@ -303,7 +303,7 @@ function MyApp() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
-                    className="w-full min-w-[200px] bg-card border border-muted rounded-lg shadow-lg z-50 py-1 animate-in fade-in-0 zoom-in-95 duration-100"
+                    className="w-full min-w-50 bg-card border border-muted rounded-lg shadow-lg z-50 py-1 animate-in fade-in-0 zoom-in-95 duration-100"
                     align="start"
                   >
                     <DropdownMenuItem
@@ -357,7 +357,7 @@ function MyApp() {
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center mb-1">
-                          <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
+                          <div className="w-2 h-2 bg-green-500 rounded-full mr-3 shrink-0"></div>
                           <span className="text-foreground font-medium truncate">
                             {serverInfo.url}
                           </span>
@@ -377,7 +377,7 @@ function MyApp() {
                       </div>
                       <button
                         onClick={() => removeServer(index)}
-                        className="ml-4 px-3 py-1.5 text-sm bg-destructive/20 text-destructive rounded-md hover:bg-destructive/30 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-1 transition-colors duration-150 flex-shrink-0"
+                        className="ml-4 px-3 py-1.5 text-sm bg-destructive/20 text-destructive rounded-md hover:bg-destructive/30 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-1 transition-colors duration-150 shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

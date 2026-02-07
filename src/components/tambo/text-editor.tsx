@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs */
 "use client";
 
 import * as Popover from "@radix-ui/react-popover";
@@ -157,6 +158,8 @@ interface SuggestionRef<T extends SuggestionItem> {
   setState: (update: Partial<SuggestionState<T>>) => void;
 }
 
+type SuggestionRefAccessor<T extends SuggestionItem> = () => SuggestionRef<T>;
+
 /**
  * Utility function to convert TipTap clientRect to position coordinates.
  * Includes line height for proper spacing when popup flips above cursor.
@@ -291,7 +294,7 @@ function checkMentionExists(editor: Editor, label: string): boolean {
 function createResourceMentionConfig(
   onSearchChange: (query: string) => void,
   onSelect: (item: ResourceItem) => void,
-  stateRef: React.MutableRefObject<SuggestionRef<ResourceItem>>,
+  stateRef: SuggestionRefAccessor<ResourceItem>,
 ): Omit<SuggestionOptions, "editor"> {
   return {
     char: "@",
@@ -314,7 +317,7 @@ function createResourceMentionConfig(
 
       return {
         onStart: (props) => {
-          stateRef.current.setState({
+          stateRef().setState({
             isOpen: true,
             selectedIndex: 0,
             position: getPositionFromClientRect(props.clientRect),
@@ -322,14 +325,14 @@ function createResourceMentionConfig(
           });
         },
         onUpdate: (props) => {
-          stateRef.current.setState({
+          stateRef().setState({
             position: getPositionFromClientRect(props.clientRect),
             command: createWrapCommand(props.editor, props.command),
             selectedIndex: 0,
           });
         },
         onKeyDown: ({ event }) => {
-          const { state, setState } = stateRef.current;
+          const { state, setState } = stateRef();
           if (!state.isOpen) return false;
 
           const handlers: Record<string, () => boolean> = {
@@ -371,7 +374,7 @@ function createResourceMentionConfig(
           return false;
         },
         onExit: () => {
-          stateRef.current.setState({ isOpen: false });
+          stateRef().setState({ isOpen: false });
         },
       };
     },
@@ -385,7 +388,7 @@ function createResourceMentionConfig(
 function createPromptCommandExtension(
   onSearchChange: (query: string) => void,
   onSelect: (item: PromptItem) => void,
-  stateRef: React.MutableRefObject<SuggestionRef<PromptItem>>,
+  stateRef: SuggestionRefAccessor<PromptItem>,
 ) {
   return Extension.create({
     name: "promptCommand",
@@ -399,7 +402,7 @@ function createPromptCommandExtension(
             // Only show prompts when editor is empty (except for the "/" and query)
             const editorValue = editor.getText().replace("/", "").trim();
             if (editorValue.length > 0) {
-              stateRef.current.setState({ isOpen: false });
+              stateRef().setState({ isOpen: false });
               return [];
             }
             // Trigger search - actual items come from props via stateRef
@@ -419,7 +422,7 @@ function createPromptCommandExtension(
                   });
                   onSelect(item);
                 };
-                stateRef.current.setState({
+                stateRef().setState({
                   isOpen: true,
                   selectedIndex: 0,
                   position: getPositionFromClientRect(props.clientRect),
@@ -434,14 +437,14 @@ function createPromptCommandExtension(
                   });
                   onSelect(item);
                 };
-                stateRef.current.setState({
+                stateRef().setState({
                   position: getPositionFromClientRect(props.clientRect),
                   command: createCommand,
                   selectedIndex: 0,
                 });
               },
               onKeyDown: ({ event }) => {
-                const { state, setState } = stateRef.current;
+                const { state, setState } = stateRef();
                 if (!state.isOpen) return false;
 
                 const handlers: Record<string, () => boolean> = {
@@ -484,7 +487,7 @@ function createPromptCommandExtension(
                 return false;
               },
               onExit: () => {
-                stateRef.current.setState({ isOpen: false });
+                stateRef().setState({ isOpen: false });
               },
             };
           },
@@ -614,44 +617,6 @@ export const TextEditor = React.forwardRef<TamboEditor, TextEditorProps>(
       useSuggestionState<ResourceItem>(resources);
     const [promptState, promptRef] = useSuggestionState<PromptItem>(prompts);
 
-    // Consolidated ref for callbacks that TipTap needs to access
-    const callbacksRef = React.useRef({
-      onSearchResources,
-      onResourceSelect,
-      onSearchPrompts,
-      onPromptSelect,
-    });
-
-    React.useEffect(() => {
-      callbacksRef.current = {
-        onSearchResources,
-        onResourceSelect,
-        onSearchPrompts,
-        onPromptSelect,
-      };
-    }, [onSearchResources, onResourceSelect, onSearchPrompts, onPromptSelect]);
-
-    // Stable callbacks for TipTap
-    const stableSearchResources = React.useCallback(
-      (query: string) => callbacksRef.current.onSearchResources(query),
-      [],
-    );
-
-    const stableSearchPrompts = React.useCallback(
-      (query: string) => callbacksRef.current.onSearchPrompts(query),
-      [],
-    );
-
-    const handleResourceSelect = React.useCallback(
-      (item: ResourceItem) => callbacksRef.current.onResourceSelect(item),
-      [],
-    );
-
-    const handlePromptSelect = React.useCallback(
-      (item: PromptItem) => callbacksRef.current.onPromptSelect(item),
-      [],
-    );
-
     const handleKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey && value.trim()) {
@@ -663,6 +628,11 @@ export const TextEditor = React.forwardRef<TamboEditor, TextEditorProps>(
       },
       [onSubmit, value, onKeyDown],
     );
+
+    const getResourceRef = React.useCallback(() => resourceRef.current, [
+      resourceRef,
+    ]);
+    const getPromptRef = React.useCallback(() => promptRef.current, [promptRef]);
 
     const editor = useEditor({
       immediatelyRender: false,
@@ -678,16 +648,16 @@ export const TextEditor = React.forwardRef<TamboEditor, TextEditorProps>(
               "mention resource inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground",
           },
           suggestion: createResourceMentionConfig(
-            stableSearchResources,
-            handleResourceSelect,
-            resourceRef,
+            onSearchResources,
+            onResourceSelect,
+            getResourceRef,
           ),
           renderLabel: ({ node }) => `@${(node.attrs.label as string) ?? ""}`,
         }),
         createPromptCommandExtension(
-          stableSearchPrompts,
-          handlePromptSelect,
-          promptRef,
+          onSearchPrompts,
+          onPromptSelect,
+          getPromptRef,
         ),
       ],
       content: value,

@@ -4,6 +4,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useEffect, Suspense, useRef, useState } from "react";
 import { Send, Sparkles } from "lucide-react";
 import { useTransitionIntent } from "../../components/aura/transition-intent";
+import { useAuth } from "../../lib/auth";
 
 function useIsHydrated() {
   const [hydrated, setHydrated] = useState(false);
@@ -21,21 +22,15 @@ function HallwayContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setIntent } = useTransitionIntent();
+  const { user, logout } = useAuth();
   
   const isHydrated = useIsHydrated();
 
   const [command, setCommand] = useState("");
   const [aiMessage, setAiMessage] = useState("System Authenticating...");
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const urlUnit = searchParams.get("unit");
-
-  // 2. THE HARD GUARD: If we are in the browser but NO unit is in the URL, go back home.
-  // This prevents the "000" from ever being assigned.
-  useEffect(() => {
-    if (isHydrated && !urlUnit) {
-      router.push("/");
-    }
-  }, [isHydrated, urlUnit, router]);
 
   const bgImage = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 
@@ -45,6 +40,33 @@ function HallwayContent() {
     { name: "AMENITIES", sector: "amenities", color: "#00ff88", path: "/amenities", keywords: ["gym", "pool", "park", "lounge", "workout"] },
     { name: "COMMUNITY", sector: "community", color: "#ffaa00", path: "/community", keywords: ["chat", "neighbors", "event", "hub"] }
   ];
+  const allowedUnits = user?.role === "admin"
+    ? ["101", "102", "201", "202"]
+    : user?.unit
+      ? [user.unit]
+      : [];
+
+  // 2. THE HARD GUARD: If we are in the browser but NO unit is in the URL, go back home.
+  // This prevents the "000" from ever being assigned.
+  useEffect(() => {
+    if (isHydrated && !urlUnit) {
+      router.push("/");
+    }
+  }, [isHydrated, urlUnit, router]);
+
+  useEffect(() => {
+    if (!isHydrated || !user || !urlUnit) return;
+    if (user.role === "user" && user.unit && urlUnit !== user.unit) {
+      router.replace(`/dashboard?unit=${user.unit}`);
+    }
+  }, [isHydrated, user, urlUnit, router]);
+
+  useEffect(() => {
+    if (!urlUnit) return;
+    doors.forEach((door) => {
+      router.prefetch(`${door.path}?unit=${urlUnit}`);
+    });
+  }, [doors, router, urlUnit]);
 
   const sceneRef = useRef(null);
   const spotlightRef = useRef(null);
@@ -77,15 +99,34 @@ function HallwayContent() {
   }
 
   function navigateToDoor(door, nextUnit) {
+    if (isNavigating) return;
+    setIsNavigating(true);
     setIntent({ type: "door", sector: door.sector, unit: nextUnit });
-    requestAnimationFrame(() => {
-      router.push(`${door.path}?unit=${nextUnit}`);
-    });
+    router.push(`${door.path}?unit=${nextUnit}`);
   }
 
   const handleAiCommand = (e) => {
     e.preventDefault();
     const input = command.toLowerCase();
+
+    if (input.includes("login")) {
+      setAiMessage("Redirecting to Login...");
+      logout();
+      router.replace("/login");
+      setCommand("");
+      return;
+    }
+
+    if (input.includes("home")) {
+      setAiMessage("Returning Home...");
+      if (user?.role === "user" && user.unit) {
+        router.push(`/dashboard?unit=${user.unit}`);
+      } else {
+        router.push("/");
+      }
+      setCommand("");
+      return;
+    }
     
     // FULL ACCESS LOGIC: Extract unit and room
     const numberMatch = input.match(/\d+/); 
@@ -97,11 +138,19 @@ function HallwayContent() {
     );
 
     if (targetDoor) {
+      if (!allowedUnits.includes(targetUnit)) {
+        setAiMessage(`Unit ${targetUnit} not found. Available: ${allowedUnits.join(", ")}.`);
+        setCommand("");
+        return;
+      }
       setAiMessage(`Direct Jump: ${targetDoor.name} (Unit ${targetUnit})...`);
-      setTimeout(() => {
-        navigateToDoor(targetDoor, targetUnit);
-      }, 250);
+      navigateToDoor(targetDoor, targetUnit);
     } else if (numberMatch) {
+      if (!allowedUnits.includes(targetUnit)) {
+        setAiMessage(`Unit ${targetUnit} not found. Available: ${allowedUnits.join(", ")}.`);
+        setCommand("");
+        return;
+      }
       setAiMessage(`Switching to Unit ${targetUnit}...`);
       router.push(`/dashboard?unit=${targetUnit}`);
     } else {
@@ -146,6 +195,48 @@ function HallwayContent() {
         RESIDENCE UNIT: {urlUnit}
       </motion.div>
 
+      <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', gap: '8px', zIndex: 5 }}>
+        {user?.role === "admin" ? (
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            style={{
+              background: 'rgba(0,0,0,0.7)',
+              border: '1px solid rgba(0,242,255,0.5)',
+              color: '#eaffff',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              fontSize: '11px',
+              letterSpacing: '2px',
+              boxShadow: '0 0 14px rgba(0,242,255,0.25)'
+            }}
+          >
+            HOME
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => {
+            logout();
+            router.replace("/login");
+          }}
+          style={{
+            background: 'rgba(0,0,0,0.7)',
+            border: '1px solid rgba(255,80,120,0.6)',
+            color: '#ffe6ef',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontSize: '11px',
+            letterSpacing: '2px',
+            boxShadow: '0 0 14px rgba(255,80,120,0.25)'
+          }}
+        >
+          LOG OUT
+        </button>
+      </div>
+
       <motion.div
         style={{
           rotateX: rotateXSpring,
@@ -174,10 +265,18 @@ function HallwayContent() {
                 width: '160px', height: '320px', backgroundColor: 'rgba(0, 0, 0, 0.8)',
                 border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px',
                 cursor: 'pointer', display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)',
-                willChange: 'transform'
+                alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)',
+                willChange: 'transform', touchAction: 'manipulation'
               }}
-              onClick={() => navigateToDoor(door, urlUnit)}
+              role="button"
+              tabIndex={0}
+              onPointerDown={() => navigateToDoor(door, urlUnit)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  navigateToDoor(door, urlUnit);
+                }
+              }}
             >
               <div style={{ width: '3px', height: '40px', backgroundColor: door.color, borderRadius: '4px', marginBottom: '30px', boxShadow: `0 0 15px ${door.color}` }} />
               <span style={{ color: 'white', fontSize: '10px', letterSpacing: '4px' }}>{door.name}</span>
@@ -188,7 +287,7 @@ function HallwayContent() {
         <motion.div style={{
             width: '500px', backgroundColor: 'rgba(0,0,0,0.85)', padding: '20px',
             borderRadius: '20px', border: '1px solid rgba(0, 242, 255, 0.3)',
-            backdropFilter: 'blur(20px)', boxShadow: '0 0 40px rgba(0,242,255,0.1)'
+            backdropFilter: 'blur(8px)', boxShadow: '0 0 40px rgba(0,242,255,0.1)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>

@@ -127,7 +127,6 @@ const CodeHeader = ({
  */
 export const createMarkdownComponents = (): Record<
   string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   React.ComponentType<any>
 > => ({
   code: function Code({ className, children, ...props }) {
@@ -151,9 +150,9 @@ export const createMarkdownComponents = (): Record<
           <div
             className={cn(
               "overflow-x-auto rounded-b-md bg-background",
-              "[&::-webkit-scrollbar]:w-[6px]",
+              "[&::-webkit-scrollbar]:w-1.5",
               "[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-thumb]:rounded-md",
-              "[&::-webkit-scrollbar:horizontal]:h-[4px]",
+              "[&::-webkit-scrollbar:horizontal]:h-1",
             )}
           >
             <pre className="p-4 whitespace-pre">

@@ -73,6 +73,12 @@ export const ReasoningInfoRoot = React.forwardRef<
     const [isExpanded, setIsExpanded] = React.useState(defaultExpanded);
     const detailsId = React.useId();
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+    const setScrollContainerNode = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        scrollContainerRef.current = node;
+      },
+      [],
+    );
 
     const hasReasoning = !!message.reasoning?.length;
     const statusText = getStatusText(isLoading, message.reasoningDurationMS);
@@ -88,8 +94,16 @@ export const ReasoningInfoRoot = React.forwardRef<
         reasoningDurationMS: message.reasoningDurationMS,
         statusText,
         scrollContainerRef,
+        setScrollContainerNode,
       }),
-      [isExpanded, detailsId, isLoading, message, statusText],
+      [
+        isExpanded,
+        detailsId,
+        isLoading,
+        message,
+        statusText,
+        setScrollContainerNode,
+      ],
     );
 
     // Auto-collapse when content arrives and reasoning is not loading
