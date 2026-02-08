@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { Dialog } from "radix-ui";
-import { useTambo } from "@tambo-ai/react";
+import { useTamboClient, useTamboThread, useTamboThreadList } from "@tambo-ai/react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 import {
   MessageInput,
   MessageInputTextarea,
@@ -26,7 +27,11 @@ export const AppAssistant = React.forwardRef<HTMLDivElement, React.HTMLAttribute
     const [open, setOpen] = React.useState(false);
     const isMac =
       typeof navigator !== "undefined" && navigator.platform.startsWith("Mac");
-    const { thread } = useTambo();
+    const { thread, startNewThread } = useTamboThread();
+    const { data: threads } = useTamboThreadList();
+    const client = useTamboClient();
+    const { user } = useAuth();
+    const clearedRef = React.useRef(false);
 
     React.useEffect(() => {
       const down = (e: KeyboardEvent) => {
@@ -39,6 +44,44 @@ export const AppAssistant = React.forwardRef<HTMLDivElement, React.HTMLAttribute
       document.addEventListener("keydown", down);
       return () => document.removeEventListener("keydown", down);
     }, []);
+
+    React.useEffect(() => {
+      const handleOpen = () => setOpen(true);
+      window.addEventListener("tambo:open-assistant", handleOpen);
+      return () => window.removeEventListener("tambo:open-assistant", handleOpen);
+    }, []);
+
+    const clearAllChats = React.useCallback(async () => {
+      const items = threads?.items ?? [];
+      if (items.length === 0) return;
+      await Promise.allSettled(
+        items.map((item) => client.beta.threads.delete(item.id)),
+      );
+    }, [threads, client]);
+
+    const handleNewChat = React.useCallback(async () => {
+      await clearAllChats();
+      await startNewThread();
+    }, [clearAllChats, startNewThread]);
+
+    React.useEffect(() => {
+      if (!open) return;
+      if (clearedRef.current) return;
+      const scopeKey = `${user?.role ?? "guest"}:${user?.unit ?? "none"}`;
+      const storageKey = `tambo.chats.cleared.${scopeKey}`;
+      if (typeof window !== "undefined" && window.sessionStorage.getItem(storageKey)) {
+        clearedRef.current = true;
+        return;
+      }
+      clearedRef.current = true;
+      void (async () => {
+        await clearAllChats();
+        await startNewThread();
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(storageKey, "true");
+        }
+      })();
+    }, [open, user, clearAllChats, startNewThread]);
 
     return (
       <Dialog.Root open={open} onOpenChange={setOpen}>

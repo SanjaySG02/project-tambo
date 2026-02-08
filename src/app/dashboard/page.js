@@ -4,7 +4,10 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useEffect, Suspense, useMemo, useRef, useState } from "react";
 import { Send, Sparkles } from "lucide-react";
 import { useTransitionIntent } from "../../components/aura/transition-intent";
+import Galaxy from "../../components/Galaxy";
+import Particles from "../../components/Particles";
 import { useAuth } from "../../lib/auth";
+import { UNIT_IDS } from "../../lib/residence-data";
 
 function useIsHydrated() {
   const [hydrated, setHydrated] = useState(false);
@@ -22,17 +25,16 @@ function HallwayContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setIntent } = useTransitionIntent();
-  const { user, logout } = useAuth();
+  const { user, logout, getProfileForUnit } = useAuth();
   
   const isHydrated = useIsHydrated();
 
   const [command, setCommand] = useState("");
-  const [aiMessage, setAiMessage] = useState("Navigator online. Ask for a room or unit.");
+  const [aiMessage, setAiMessage] = useState("Where should I take you? Try a room name or unit number.");
   const [isNavigating, setIsNavigating] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const urlUnit = searchParams.get("unit");
-
-  const bgImage = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 
   const doors = useMemo(
     () => [
@@ -44,7 +46,7 @@ function HallwayContent() {
     [],
   );
   const allowedUnits = user?.role === "admin"
-    ? ["101", "102", "201", "202"]
+    ? UNIT_IDS
     : user?.unit
       ? [user.unit]
       : [];
@@ -63,6 +65,15 @@ function HallwayContent() {
       router.replace(`/dashboard?unit=${user.unit}`);
     }
   }, [isHydrated, user, urlUnit, router]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (user.role === "admin") {
+      setAiMessage("Where should I take you? Try a room name or unit number.");
+      return;
+    }
+    setAiMessage("Where should I take you? Try a room name.");
+  }, [user]);
 
   useEffect(() => {
     if (!urlUnit) return;
@@ -130,6 +141,13 @@ function HallwayContent() {
       setCommand("");
       return;
     }
+
+    if (input.includes("assistant")) {
+      setAiMessage("Opening AI assistant...");
+      window.dispatchEvent(new CustomEvent("tambo:open-assistant"));
+      setCommand("");
+      return;
+    }
     
     // FULL ACCESS LOGIC: Extract unit and room
     const numberMatch = input.match(/\d+/); 
@@ -173,7 +191,7 @@ function HallwayContent() {
       className="aura-hqBg"
       style={{ 
       height: '100vh', width: '100vw', backgroundColor: '#02040a',
-      backgroundImage: `url('${bgImage}')`, backgroundSize: 'cover', backgroundPosition: 'center',
+      backgroundSize: 'cover', backgroundPosition: 'center',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       perspective: '1500px', overflow: 'hidden', position: 'relative'
     }}
@@ -183,7 +201,33 @@ function HallwayContent() {
         my.set(0);
       }}
     >
-      <div ref={spotlightRef} className="aura-spotlightOverlay" />
+      <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+        <Particles
+          particleCount={260}
+          particleSpread={12}
+          speed={0.06}
+          particleColors={["#bfeaff", "#a6d7ff", "#ffffff"]}
+          moveParticlesOnHover
+          particleHoverFactor={0.35}
+          alphaParticles
+          particleBaseSize={70}
+          sizeRandomness={0.8}
+          cameraDistance={22}
+          disableRotation={false}
+          pixelRatio={1}
+        />
+        <Galaxy
+          density={1.1}
+          hueShift={205}
+          glowIntensity={0.3}
+          saturation={0.18}
+          twinkleIntensity={0.3}
+          rotationSpeed={0.1}
+          speed={0.9}
+          transparent
+        />
+      </div>
+      <div ref={spotlightRef} className="aura-spotlightOverlay" style={{ zIndex: 1 }} />
       
       <motion.div 
         key={urlUnit}
@@ -192,7 +236,7 @@ function HallwayContent() {
         style={{
           position: 'absolute', top: '20px', padding: '10px 30px',
           border: '1px solid #00f2ff', backgroundColor: 'rgba(0,0,0,0.8)',
-          borderRadius: '4px', color: '#00f2ff', letterSpacing: '4px', fontSize: '14px', fontWeight: 'bold'
+          borderRadius: '4px', color: '#00f2ff', letterSpacing: '4px', fontSize: '14px', fontWeight: 'bold', zIndex: 1
         }}
       >
         RESIDENCE UNIT: {urlUnit}
@@ -218,7 +262,26 @@ function HallwayContent() {
             HOME
           </button>
         ) : null}
-        <button
+        {user ? (
+          <button
+            type="button"
+            onClick={() => setShowProfile(true)}
+            style={{
+              background: 'rgba(0,0,0,0.7)',
+              border: '1px solid rgba(0,242,255,0.5)',
+              color: '#eaffff',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              fontSize: '11px',
+              letterSpacing: '2px',
+              boxShadow: '0 0 14px rgba(0,242,255,0.25)'
+            }}
+          >
+            PROFILE
+          </button>
+        ) : null}
+      <button
           type="button"
           onClick={() => {
             logout();
@@ -239,6 +302,86 @@ function HallwayContent() {
           LOG OUT
         </button>
       </div>
+
+      {showProfile ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 30,
+          }}
+        >
+          <div
+            style={{
+              width: "420px",
+              padding: "24px",
+              borderRadius: "20px",
+              background: "rgba(8, 12, 18, 0.95)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+              color: "white",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
+              <div style={{ fontSize: "14px", letterSpacing: "2px", color: "#00f2ff" }}>
+                PROFILE
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProfile(false)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  color: "white",
+                  padding: "4px 10px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "11px",
+                }}
+              >
+                CLOSE
+              </button>
+            </div>
+            <div style={{ display: "grid", gap: "12px" }}>
+              {[
+                {
+                  label: "NAME",
+                  value: getProfileForUnit(user?.role === "admin" ? urlUnit : user?.unit).name,
+                },
+                {
+                  label: "MOBILE",
+                  value: getProfileForUnit(user?.role === "admin" ? urlUnit : user?.unit).mobile,
+                },
+                {
+                  label: "EMAIL",
+                  value: getProfileForUnit(user?.role === "admin" ? urlUnit : user?.unit).email,
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    padding: "12px",
+                    borderRadius: "12px",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div style={{ fontSize: "10px", letterSpacing: "2px", color: "rgba(255,255,255,0.5)" }}>
+                    {item.label}
+                  </div>
+                  <div style={{ fontSize: "14px", marginTop: "6px", color: "white" }}>
+                    {item.value || ""}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <motion.div
         style={{
@@ -302,7 +445,7 @@ function HallwayContent() {
             <input 
               value={command}
               onChange={(e) => setCommand(e.target.value)}
-              placeholder="Try: 'Utilities 202' or 'Go to Gym'"
+              placeholder={`Try: 'Utilities ${urlUnit}' or 'Go to Gym'`}
               style={{
                 flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
                 padding: '12px 20px', borderRadius: '12px', color: 'white', outline: 'none'

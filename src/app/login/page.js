@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, User } from "lucide-react";
 import { useAuth } from "../../lib/auth";
+import { GridScan } from "../../components/GridScan";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,9 +12,6 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
-  const backgroundImageLink =
-    "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -34,21 +32,40 @@ export default function LoginPage() {
     <div
       className="aura-hqBg"
       style={{
+        position: "relative",
         height: "100vh",
         width: "100vw",
-        backgroundColor: "#03060f",
-        backgroundImage: `radial-gradient(circle at center, rgba(3,6,15,0.3) 0%, rgba(3,6,15,0.9) 100%), url('${backgroundImageLink}')`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        background: "#04070f",
         color: "white",
         fontFamily: "sans-serif",
+        overflow: "hidden",
       }}
     >
+      <GridScan
+        className="gridscan"
+        style={{ zIndex: 0 }}
+        enableWebcam={false}
+        showPreview={false}
+        scanColor="#2ad9ff"
+        linesColor="#0f1a2b"
+        gridScale={0.1}
+        lineThickness={0.8}
+        scanOpacity={0.22}
+        scanGlow={0.35}
+        scanSoftness={2.8}
+        scanDuration={3.2}
+        scanDelay={2.6}
+        noiseIntensity={0.006}
+        bloomIntensity={0.08}
+        chromaticAberration={0.0006}
+      />
       <div
         style={{
+          position: "relative",
+          zIndex: 1,
           width: "420px",
           padding: "40px",
           borderRadius: "24px",

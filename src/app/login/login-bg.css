@@ -1,0 +1,113 @@
+.login-shell {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #04070f;
+  color: white;
+  font-family: "Space Grotesk", "Sora", "Manrope", sans-serif;
+}
+
+.login-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.login-bg__filter {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.login-bg__liquid {
+  position: absolute;
+  inset: -25%;
+  background:
+    radial-gradient(closest-side at 30% 30%, rgba(46, 187, 255, 0.45), transparent 62%),
+    radial-gradient(closest-side at 70% 40%, rgba(255, 204, 102, 0.28), transparent 60%),
+    radial-gradient(closest-side at 50% 80%, rgba(120, 180, 255, 0.35), transparent 65%),
+    linear-gradient(120deg, rgba(12, 20, 40, 0.95), rgba(3, 5, 12, 0.9));
+  filter: url(#liquidChrome);
+  animation: liquid-drift 18s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+
+.login-bg__shine {
+  position: absolute;
+  inset: -20%;
+  background: conic-gradient(
+      from 110deg,
+      rgba(255, 255, 255, 0.1),
+      transparent 40%,
+      rgba(0, 242, 255, 0.16),
+      transparent 70%
+    );
+  filter: blur(30px);
+  opacity: 0.6;
+  animation: chrome-rotate 40s linear infinite;
+  mix-blend-mode: screen;
+}
+
+.login-bg__grain {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.12), transparent 60%),
+    radial-gradient(1px 1px at 60px 80px, rgba(255, 255, 255, 0.1), transparent 60%),
+    radial-gradient(1px 1px at 120px 40px, rgba(255, 255, 255, 0.08), transparent 60%);
+  background-size: 240px 180px;
+  opacity: 0.4;
+  animation: grain-drift 90s linear infinite;
+}
+
+.login-bg__fade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(4, 7, 15, 0.1) 0%, rgba(4, 7, 15, 0.95) 70%);
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes nebula-float {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-4%, 3%, 0) scale(1.08);
+  }
+}
+
+@keyframes liquid-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-3%, 2%, 0) scale(1.05) rotate(2deg);
+  }
+}
+
+@keyframes chrome-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes grain-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: -1200px 600px;
+  }
+}

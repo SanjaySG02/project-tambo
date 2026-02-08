@@ -258,7 +258,7 @@ function HistoryGuard() {
 }
 
 function TamboShell({ children }) {
-  const { user } = useAuth();
+  const { user, getAssignedUnits, getAvailableUnits, getProfileForUnit } = useAuth();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const apiKey = process.env.NEXT_PUBLIC_TAMBO_API_KEY;
@@ -325,6 +325,14 @@ function TamboShell({ children }) {
     return UNIT_IDS.map((id) => getUnitSnapshot(id)).filter(Boolean);
   }, [user]);
 
+  const allUnitProfiles = useMemo(() => {
+    if (user?.role !== "admin") return null;
+    return UNIT_IDS.reduce((acc, id) => {
+      acc[id] = getProfileForUnit(id);
+      return acc;
+    }, {});
+  }, [user, getProfileForUnit]);
+
   const electricityChartItems = useMemo(() => {
     const snapshots =
       user?.role === "admin"
@@ -336,6 +344,214 @@ function TamboShell({ children }) {
       label: snapshot?.unitId ? `Unit ${snapshot.unitId}` : "Unknown",
       value: snapshot.utilities?.electricityKwh ?? 0,
       unit: "kWh",
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const waterChartItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    return snapshots.map((snapshot) => ({
+      label: snapshot?.unitId ? `Unit ${snapshot.unitId}` : "Unknown",
+      value: snapshot.utilities?.waterLitres ?? 0,
+      unit: "L",
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const gasChartItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    return snapshots.map((snapshot) => ({
+      label: snapshot?.unitId ? `Unit ${snapshot.unitId}` : "Unknown",
+      value: snapshot.utilities?.gasM3 ?? 0,
+      unit: "m3",
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const solarChartItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    return snapshots.map((snapshot) => ({
+      label: snapshot?.unitId ? `Unit ${snapshot.unitId}` : "Unknown",
+      value: snapshot.utilities?.solarKwh ?? 0,
+      unit: "kWh",
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const securityAlertsChartItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    return snapshots.map((snapshot) => ({
+      label: snapshot?.unitId ? `Unit ${snapshot.unitId}` : "Unknown",
+      value: snapshot.security?.alerts ?? 0,
+      unit: "alerts",
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const camerasOnlineChartItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    return snapshots.map((snapshot) => ({
+      label: snapshot?.unitId ? `Unit ${snapshot.unitId}` : "Unknown",
+      value: snapshot.security?.camerasOnline ?? 0,
+      unit: "cams",
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const unitStatusPieItems = useMemo(() => {
+    if (user?.role !== "admin") {
+      return activeUnitId ? [{ label: "Occupied", value: 1 }] : [];
+    }
+    const vacantCount = getAvailableUnits().length;
+    const occupiedCount = getAssignedUnits().length;
+    return [
+      { label: "Occupied", value: occupiedCount },
+      { label: "Vacant", value: vacantCount },
+    ];
+  }, [user, activeUnitId, getAvailableUnits, getAssignedUnits]);
+
+  const entranceStatusPieItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    const counts = snapshots.reduce(
+      (acc, snapshot) => {
+        const status = snapshot?.security?.entrance || "Unknown";
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+    return Object.entries(counts).map(([label, value]) => ({
+      label,
+      value,
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const gymAccessPieItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    const counts = snapshots.reduce(
+      (acc, snapshot) => {
+        const status = snapshot?.amenities?.gymAccess || "Unknown";
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+    return Object.entries(counts).map(([label, value]) => ({
+      label,
+      value,
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const poolStatusPieItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    const counts = snapshots.reduce(
+      (acc, snapshot) => {
+        const status = snapshot?.amenities?.poolStatus || "Unknown";
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+    return Object.entries(counts).map(([label, value]) => ({
+      label,
+      value,
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const loungeOccupancyPieItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    const counts = snapshots.reduce(
+      (acc, snapshot) => {
+        const status = snapshot?.amenities?.loungeOccupancy || "Unknown";
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+    return Object.entries(counts).map(([label, value]) => ({
+      label,
+      value,
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const parkStatusPieItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    const counts = snapshots.reduce(
+      (acc, snapshot) => {
+        const status = snapshot?.amenities?.parkStatus || "Unknown";
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+    return Object.entries(counts).map(([label, value]) => ({
+      label,
+      value,
+    }));
+  }, [user, allSnapshots, activeSnapshot]);
+
+  const communityMoodPieItems = useMemo(() => {
+    const snapshots =
+      user?.role === "admin"
+        ? allSnapshots ?? []
+        : activeSnapshot
+          ? [activeSnapshot]
+          : [];
+    const counts = snapshots.reduce(
+      (acc, snapshot) => {
+        const status = snapshot?.community?.mood || "Unknown";
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+    return Object.entries(counts).map(([label, value]) => ({
+      label,
+      value,
     }));
   }, [user, allSnapshots, activeSnapshot]);
 
@@ -357,7 +573,7 @@ function TamboShell({ children }) {
       assistantGuidance: () => ({
         key: "assistantGuidance",
         value:
-          "User speaks in plain English. Provide a concise analysis report using only on-site snapshot data. When a report is requested, always include an AnalyticsBarChart with items derived from electricityKwh per unit. Do not ask follow-up questions about time ranges or extra requirements.",
+            "User speaks in plain English. Answer only what is asked and avoid extra context. For any analysis/report/chart/graph request, always respond with a chart component plus a short, friendly summary sentence (e.g., 'Electricity usage is mid-level and looks healthy'). Keep the wording concise and user-friendly; do not add long narratives. Use AnalyticsBarChart for per-unit metrics (electricity, water, gas, solar, security alerts, cameras). Use AnalyticsPieChart for breakdowns (unit status, entrance status, percentages). Choose the most relevant dataset for the prompt; if unclear, default to electricityChartItems. If the admin asks for a 'report of all units', include multiple charts covering: profiles (occupied vs vacant), utilities (electricity, water, gas, solar), and security (alerts, cameras, entrance status). Do not include community or amenities in analysis/report/chart responses. If asked about user or profile details, reply with profile fields (name, mobile, email) for that unit and do not include charts. If asked for unit details (e.g., 'details of user in 502' or 'details of unit 502'), respond with profile + utilities + security + amenities + community for that unit only, without charts. If asked about vacant or available units, respond only with the availableUnits list and count. Define vacant as units with empty profile fields and empty utilities data (all zero). Use this rule for occupied/vacant charts and counts by checking all units. If an admin asks to add a new user, render the AdminUserProvision component to collect profile details (name, mobile, email). If the admin specifies a unit (e.g., 'add user in unit 101'), pass preferredUnit with that unit. Otherwise, assign a random available unit. If all units are filled or the requested unit is already assigned, explain that no units are available. Do not ask follow-up questions about time ranges or extra requirements.",
       }),
       electricityChartItems: () => ({
         key: "electricityChartItems",
@@ -371,9 +587,197 @@ function TamboShell({ children }) {
           2,
         ),
       }),
+      waterChartItems: () => ({
+        key: "waterChartItems",
+        value: JSON.stringify(
+          {
+            title: "Water Usage (L)",
+            subtitle: "Latest snapshot across units",
+            items: waterChartItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      gasChartItems: () => ({
+        key: "gasChartItems",
+        value: JSON.stringify(
+          {
+            title: "Gas Usage (m3)",
+            subtitle: "Latest snapshot across units",
+            items: gasChartItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      solarChartItems: () => ({
+        key: "solarChartItems",
+        value: JSON.stringify(
+          {
+            title: "Solar Generation (kWh)",
+            subtitle: "Latest snapshot across units",
+            items: solarChartItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      securityAlertsChartItems: () => ({
+        key: "securityAlertsChartItems",
+        value: JSON.stringify(
+          {
+            title: "Security Alerts",
+            subtitle: "Latest snapshot across units",
+            items: securityAlertsChartItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      camerasOnlineChartItems: () => ({
+        key: "camerasOnlineChartItems",
+        value: JSON.stringify(
+          {
+            title: "Cameras Online",
+            subtitle: "Latest snapshot across units",
+            items: camerasOnlineChartItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      unitStatusPieItems: () => ({
+        key: "unitStatusPieItems",
+        value: JSON.stringify(
+          {
+            title: "Unit Status Breakdown",
+            subtitle: "Latest snapshot across units",
+            items: unitStatusPieItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      entranceStatusPieItems: () => ({
+        key: "entranceStatusPieItems",
+        value: JSON.stringify(
+          {
+            title: "Entrance Status Breakdown",
+            subtitle: "Latest snapshot across units",
+            items: entranceStatusPieItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      gymAccessPieItems: () => ({
+        key: "gymAccessPieItems",
+        value: JSON.stringify(
+          {
+            title: "Gym Access Breakdown",
+            subtitle: "Latest snapshot across units",
+            items: gymAccessPieItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      poolStatusPieItems: () => ({
+        key: "poolStatusPieItems",
+        value: JSON.stringify(
+          {
+            title: "Pool Status Breakdown",
+            subtitle: "Latest snapshot across units",
+            items: poolStatusPieItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      loungeOccupancyPieItems: () => ({
+        key: "loungeOccupancyPieItems",
+        value: JSON.stringify(
+          {
+            title: "Lounge Occupancy Breakdown",
+            subtitle: "Latest snapshot across units",
+            items: loungeOccupancyPieItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      parkStatusPieItems: () => ({
+        key: "parkStatusPieItems",
+        value: JSON.stringify(
+          {
+            title: "Park Status Breakdown",
+            subtitle: "Latest snapshot across units",
+            items: parkStatusPieItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      communityMoodPieItems: () => ({
+        key: "communityMoodPieItems",
+        value: JSON.stringify(
+          {
+            title: "Community Mood Breakdown",
+            subtitle: "Latest snapshot across units",
+            items: communityMoodPieItems,
+          },
+          null,
+          2,
+        ),
+      }),
+      assignedUnits: () => ({
+        key: "assignedUnits",
+        value: JSON.stringify(getAssignedUnits(), null, 2),
+      }),
+      availableUnits: () => ({
+        key: "availableUnits",
+        value: JSON.stringify(getAvailableUnits(), null, 2),
+      }),
+      availableUnitsCount: () => ({
+        key: "availableUnitsCount",
+        value: String(getAvailableUnits().length),
+      }),
+      allUnitProfiles: () => ({
+        key: "allUnitProfiles",
+        value: allUnitProfiles ? JSON.stringify(allUnitProfiles, null, 2) : "User-only scope.",
+      }),
+      activeUnitProfile: () => ({
+        key: "activeUnitProfile",
+        value: activeUnitId
+          ? JSON.stringify(getProfileForUnit(activeUnitId))
+          : "No active unit profile.",
+      }),
       currentPage: () => ({ key: "page", value: window.location.pathname }),
     }),
-      [user, activeUnitId, activeSnapshot, allSnapshots, electricityChartItems],
+      [
+        user,
+        activeUnitId,
+        activeSnapshot,
+        allSnapshots,
+        allUnitProfiles,
+        electricityChartItems,
+        waterChartItems,
+        gasChartItems,
+        solarChartItems,
+        securityAlertsChartItems,
+        camerasOnlineChartItems,
+        unitStatusPieItems,
+        entranceStatusPieItems,
+        gymAccessPieItems,
+        poolStatusPieItems,
+        loungeOccupancyPieItems,
+        parkStatusPieItems,
+        communityMoodPieItems,
+        getAssignedUnits,
+        getAvailableUnits,
+        getProfileForUnit,
+      ],
   );
 
   if (!apiKey) {

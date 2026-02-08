@@ -14,6 +14,8 @@
 import type { TamboComponent } from "@tambo-ai/react";
 import { z } from "zod";
 import { AnalyticsBarChart } from "../components/tambo/analytics-bar-chart";
+import { AnalyticsPieChart } from "../components/tambo/analytics-pie-chart";
+import { AdminUserProvision } from "../components/tambo/admin-user-provision";
 
 
 /**
@@ -72,6 +74,43 @@ export const components: TamboComponent[] = [
 					}),
 				)
 				.default([]),
+		}),
+	},
+	{
+		name: "AnalyticsPieChart",
+		description: "Renders a pie chart for report data values",
+		component: AnalyticsPieChart,
+		propsSchema: z.object({
+			title: z.string().optional(),
+			subtitle: z.string().optional(),
+			items: z
+				.array(
+					z.object({
+						label: z.preprocess(
+							(val) => (typeof val === "string" && val.trim() ? val : "Unknown"),
+							z.string(),
+						),
+						value: z.preprocess(
+							(val) => (typeof val === "number" ? val : 0),
+							z.number(),
+						),
+						color: z.preprocess(
+							(val) => (typeof val === "string" ? val : undefined),
+							z.string().optional(),
+						),
+					}),
+				)
+				.default([]),
+		}),
+	},
+	{
+		name: "AdminUserProvision",
+		description: "Form to create a new resident user with profile details",
+		component: AdminUserProvision,
+		propsSchema: z.object({
+			title: z.string().optional(),
+			subtitle: z.string().optional(),
+			preferredUnit: z.string().optional(),
 		}),
 	},
 ];

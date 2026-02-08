@@ -5,12 +5,14 @@ import { ArrowLeft, MessageSquare, Calendar, Users, Bell, Send } from "lucide-re
 import { Suspense, useEffect } from "react";
 import { useAuth } from "../../lib/auth";
 import { UNIT_IDS, getUnitSnapshot } from "../../lib/residence-data";
+import Dither from "../../components/Dither";
 
 const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 const communityBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`;
 
 const communityContainerStyle = {
   minHeight: '100vh',
+  position: 'relative',
   backgroundColor: 'black',
   backgroundImage: communityBackgroundImage,
   backgroundSize: 'cover',
@@ -68,81 +70,84 @@ function CommunityRoomContent() {
 
   return (
     <div className="aura-hqBg" style={communityContainerStyle}>
-
-      {/* 3. DYNAMIC UNIT HUD (Shows who is chatting) */}
-      <div style={{ 
-        position: 'absolute', top: '20px', right: '40px', 
-        color: '#ffaa00', border: '1px solid rgba(255, 170, 0, 0.4)', 
-        padding: '5px 15px', borderRadius: '4px', fontSize: '11px',
-        backgroundColor: 'rgba(0,0,0,0.6)', letterSpacing: '2px', backdropFilter: 'blur(3px)'
-      }}>
-        LOGGED IN AS: RESIDENT {unitNumber}
+      <div className="dither-layer">
+        <Dither enableMouseInteraction={false} />
       </div>
+      <div style={{ position: "relative", zIndex: 1 }}>
+        {/* 3. DYNAMIC UNIT HUD (Shows who is chatting) */}
+        <div style={{ 
+          position: 'absolute', top: '20px', right: '40px', 
+          color: '#ffaa00', border: '1px solid rgba(255, 170, 0, 0.4)', 
+          padding: '5px 15px', borderRadius: '4px', fontSize: '11px',
+          backgroundColor: 'rgba(0,0,0,0.6)', letterSpacing: '2px', backdropFilter: 'blur(3px)'
+        }}>
+          LOGGED IN AS: RESIDENT {unitNumber}
+        </div>
 
-      {/* Navigation */}
-      <nav style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        gap: "20px", 
-        marginBottom: "40px",
-        backdropFilter: "blur(4px)",
-        padding: "10px",
-        borderRadius: "15px",
-        position: "relative",
-        zIndex: 2
-      }}>
-        <div style={{ display: "flex", gap: "8px" }}>
-          {user?.role === "admin" ? (
+        {/* Navigation */}
+        <nav style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "20px", 
+          marginBottom: "40px",
+          backdropFilter: "blur(4px)",
+          padding: "10px",
+          borderRadius: "15px",
+          position: "relative",
+          zIndex: 2
+        }}>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {user?.role === "admin" ? (
+              <button
+                type="button"
+                onClick={() => router.push("/")}
+                style={{
+                  background: "rgba(0,0,0,0.7)",
+                  border: "1px solid rgba(0,242,255,0.5)",
+                  color: "#eaffff",
+                  padding: "8px 14px",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  fontSize: "11px",
+                  letterSpacing: "2px",
+                  boxShadow: "0 0 14px rgba(0,242,255,0.25)",
+                }}
+              >
+                HOME
+              </button>
+            ) : null}
             <button
               type="button"
-              onClick={() => router.push("/")}
+              onClick={() => {
+                logout();
+                router.replace("/login");
+              }}
               style={{
                 background: "rgba(0,0,0,0.7)",
-                border: "1px solid rgba(0,242,255,0.5)",
-                color: "#eaffff",
+                border: "1px solid rgba(255,80,120,0.6)",
+                color: "#ffe6ef",
                 padding: "8px 14px",
                 borderRadius: "10px",
                 cursor: "pointer",
                 fontSize: "11px",
                 letterSpacing: "2px",
-                boxShadow: "0 0 14px rgba(0,242,255,0.25)",
+                boxShadow: "0 0 14px rgba(255,80,120,0.25)",
               }}
             >
-              HOME
+              LOG OUT
             </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => {
-              logout();
-              router.replace("/login");
-            }}
-            style={{
-              background: "rgba(0,0,0,0.7)",
-              border: "1px solid rgba(255,80,120,0.6)",
-              color: "#ffe6ef",
-              padding: "8px 14px",
-              borderRadius: "10px",
-              cursor: "pointer",
-              fontSize: "11px",
-              letterSpacing: "2px",
-              boxShadow: "0 0 14px rgba(255,80,120,0.25)",
-            }}
+          </div>
+          <button 
+            // 4. PERSISTENCE: Return to Dashboard while keeping the unit number
+            onClick={() => router.push(`/dashboard?unit=${unitNumber}`)}
+            style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "white", padding: "10px", borderRadius: "12px", cursor: "pointer" }}
           >
-            LOG OUT
+            <ArrowLeft size={20} />
           </button>
-        </div>
-        <button 
-          // 4. PERSISTENCE: Return to Dashboard while keeping the unit number
-          onClick={() => router.push(`/dashboard?unit=${unitNumber}`)}
-          style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "white", padding: "10px", borderRadius: "12px", cursor: "pointer" }}
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 style={{ fontSize: "24px", fontWeight: "200", letterSpacing: "4px", color: "#ffaa00", margin: 0 }}>COMMUNITY HUB</h1>
-      </nav>
+          <h1 style={{ fontSize: "24px", fontWeight: "200", letterSpacing: "4px", color: "#ffaa00", margin: 0 }}>COMMUNITY HUB</h1>
+        </nav>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "40px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "40px" }}>
         
         {/* LEFT: NOTICE BOARD */}
         <div>
@@ -231,6 +236,7 @@ function CommunityRoomContent() {
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );

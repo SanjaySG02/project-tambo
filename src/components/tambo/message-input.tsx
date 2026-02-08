@@ -457,12 +457,13 @@ const MessageInputInternal = React.forwardRef<
     addImages,
     removeImage,
   } = useTamboThreadInput();
-  const { cancel, thread } = useTamboThread();
+  const { cancel, thread, generateThreadName } = useTamboThread();
   const [displayValue, setDisplayValue] = React.useState("");
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [imageError, setImageError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
+  const generatedNameRef = React.useRef<Record<string, boolean>>({});
   const editorRef = React.useRef<TamboEditor>(null!);
   const dragCounter = React.useRef(0);
 
@@ -512,6 +513,12 @@ const MessageInputInternal = React.forwardRef<
           resourceNames: latestResourceNames,
         });
         setValue("");
+        if (!thread.name && !generatedNameRef.current[thread.id]) {
+          generatedNameRef.current[thread.id] = true;
+          void generateThreadName(thread.id).catch((error) => {
+            console.error("Failed to generate thread name:", error);
+          });
+        }
         // Clear only the images that were staged when submission started so
         // any images added while the request was in-flight are preserved.
         if (imageIdsAtSubmitTime.length > 0) {
@@ -550,6 +557,8 @@ const MessageInputInternal = React.forwardRef<
       removeImage,
       editorRef,
       thread.id,
+      thread.name,
+      generateThreadName,
     ],
   );
 

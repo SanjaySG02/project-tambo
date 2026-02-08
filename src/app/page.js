@@ -2,34 +2,70 @@
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
-import { Building2, Home, Sparkles, Send } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, Home, Sparkles, Send } from "lucide-react";
 import { useTransitionIntent } from "../components/aura/transition-intent";
 import { useAuth } from "../lib/auth";
 import Galaxy from "../components/Galaxy";
+import LightPillar from "../components/LightPillar";
+import { UNIT_IDS, getUnitSnapshot } from "../lib/residence-data";
 
 export default function LobbyPage() {
   const router = useRouter();
   const { setIntent } = useTransitionIntent();
-  const { user, logout } = useAuth();
+  const { user, logout, getProfileForUnit } = useAuth();
   const [command, setCommand] = useState("");
   const [aiMessage, setAiMessage] = useState("Lobby Terminal Active. Select a Unit.");
   const [hoveredUnit, setHoveredUnit] = useState(null);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [showProfiles, setShowProfiles] = useState(false);
 
   const lobbyBg = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop";
 
   const flats = useMemo(
-    () => [
-      { id: "101", type: "Studio", status: "Occupied" },
-      { id: "102", type: "Penthouse", status: "Vacant" },
-      { id: "201", type: "Deluxe", status: "Occupied" },
-      { id: "202", type: "Studio", status: "Maintenance" },
-    ],
-    [],
+    () =>
+      UNIT_IDS.map((id) => {
+        const snapshot = getUnitSnapshot(id);
+        const profile = getProfileForUnit(id);
+        const isAssigned = Boolean(
+          profile?.name || profile?.mobile || profile?.email,
+        );
+        const floor = id.slice(0, 1);
+        const typeMap = {
+          "1": "Studio",
+          "2": "Deluxe",
+          "3": "Skyline",
+          "4": "Penthouse",
+          "5": "Executive",
+        };
+        return {
+          id,
+          type: typeMap[floor] || "Residence",
+          status: isAssigned ? "Occupied" : "Vacant",
+        };
+      }),
+    [getProfileForUnit],
   );
-  const visibleFlats = user?.role === "admin"
-    ? flats
+
+  const pageSize = 4;
+  const pageCount = Math.max(1, Math.ceil(flats.length / pageSize));
+  const isAdmin = user?.role === "admin";
+  const pagedFlats = flats.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
+  const visibleFlats = isAdmin
+    ? pagedFlats
     : flats.filter((flat) => flat.id === user?.unit);
-  const allowedUnits = visibleFlats.map((flat) => flat.id);
+  const allowedUnits = isAdmin
+    ? flats.map((flat) => flat.id)
+    : flats.filter((flat) => flat.id === user?.unit).map((flat) => flat.id);
+
+  useEffect(() => {
+    if (!isAdmin) {
+      setPageIndex(0);
+      return;
+    }
+    if (pageIndex > pageCount - 1) {
+      setPageIndex(pageCount - 1);
+    }
+  }, [isAdmin, pageIndex, pageCount]);
 
   useEffect(() => {
     if (user?.role === "user" && user.unit) {
@@ -46,10 +82,10 @@ export default function LobbyPage() {
   ];
 
   useEffect(() => {
-    flats.forEach((flat) => {
-      router.prefetch(`/dashboard?unit=${flat.id}`);
+    allowedUnits.forEach((id) => {
+      router.prefetch(`/dashboard?unit=${id}`);
     });
-  }, [flats, router]);
+  }, [allowedUnits, router]);
 
   const handleAiCommand = (e) => {
     e.preventDefault();
@@ -119,34 +155,147 @@ export default function LobbyPage() {
       backgroundImage: `radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,1) 100%), url('${lobbyBg}')`,
       backgroundSize: 'cover', backgroundPosition: 'center',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      color: 'white', fontFamily: 'sans-serif', overflow: 'hidden'
+      color: 'white', fontFamily: 'sans-serif', overflow: 'hidden', position: 'relative'
     }}>
+      {isAdmin ? (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+          <LightPillar
+            topColor="#4fd5ff"
+            bottomColor="#ff9ffc"
+            intensity={0.6}
+            rotationSpeed={0.2}
+            glowAmount={0.004}
+            pillarWidth={2.4}
+            pillarHeight={0.35}
+            noiseIntensity={0.35}
+            mixBlendMode="screen"
+            pillarRotation={15}
+            quality="medium"
+          />
+        </div>
+      ) : null}
       
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '40px', zIndex: 1 }}>
         <Building2 size={40} color="#00f2ff" style={{ marginBottom: '10px' }} />
         <h1 style={{ letterSpacing: '8px', fontWeight: '200', fontSize: '24px', margin: 0 }}>RESIDENCE DIRECTORY</h1>
       </div>
 
-      <button
-        onClick={logout}
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "20px",
-          background: "rgba(255,255,255,0.08)",
-          border: "1px solid rgba(255,255,255,0.2)",
-          color: "white",
-          padding: "8px 14px",
-          borderRadius: "10px",
-          cursor: "pointer",
-          fontSize: "11px",
-          letterSpacing: "2px",
-        }}
-      >
-        LOG OUT
-      </button>
+      <div style={{ position: "absolute", top: "20px", left: "20px", display: "flex", gap: "8px", zIndex: 2 }}>
+        {isAdmin ? (
+          <button
+            type="button"
+            onClick={() => setShowProfiles(true)}
+            style={{
+              background: "rgba(0,0,0,0.7)",
+              border: "1px solid rgba(0,242,255,0.5)",
+              color: "#eaffff",
+              padding: "8px 14px",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "11px",
+              letterSpacing: "2px",
+              boxShadow: "0 0 14px rgba(0,242,255,0.25)",
+            }}
+          >
+            PROFILES
+          </button>
+        ) : null}
+        <button
+          onClick={logout}
+          style={{
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            color: "white",
+            padding: "8px 14px",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontSize: "11px",
+            letterSpacing: "2px",
+          }}
+        >
+          LOG OUT
+        </button>
+      </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '40px' }}>
+      {showProfiles ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 40,
+          }}
+        >
+          <div
+            style={{
+              width: "640px",
+              maxHeight: "80vh",
+              overflow: "auto",
+              padding: "24px",
+              borderRadius: "20px",
+              background: "rgba(8, 12, 18, 0.95)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+              color: "white",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
+              <div style={{ fontSize: "14px", letterSpacing: "2px", color: "#00f2ff" }}>
+                UNIT PROFILES
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProfiles(false)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  color: "white",
+                  padding: "4px 10px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "11px",
+                }}
+              >
+                CLOSE
+              </button>
+            </div>
+            <div style={{ display: "grid", gap: "12px" }}>
+              {UNIT_IDS.map((unitId) => {
+                const profile = getProfileForUnit(unitId);
+                return (
+                  <div
+                    key={unitId}
+                    style={{
+                      padding: "12px",
+                      borderRadius: "12px",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <div style={{ fontSize: "11px", letterSpacing: "2px", color: "#00f2ff" }}>
+                      UNIT {unitId}
+                    </div>
+                    <div style={{ marginTop: "8px", fontSize: "12px", color: "rgba(255,255,255,0.75)" }}>
+                      Name: {profile.name || ""}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)" }}>
+                      Mobile: {profile.mobile || ""}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)" }}>
+                      Email: {profile.email || ""}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '24px', zIndex: 1 }}>
         {visibleFlats.map((flat) => (
           <motion.div
             key={flat.id}
@@ -206,10 +355,50 @@ export default function LobbyPage() {
         ))}
       </div>
 
+      {isAdmin && pageCount > 1 ? (
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px", zIndex: 1 }}>
+          <button
+            type="button"
+            onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
+            disabled={pageIndex === 0}
+            style={{
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              color: "white",
+              padding: "8px 12px",
+              borderRadius: "10px",
+              cursor: pageIndex === 0 ? "not-allowed" : "pointer",
+              opacity: pageIndex === 0 ? 0.4 : 1,
+            }}
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <div style={{ fontSize: "11px", letterSpacing: "2px", color: "rgba(255,255,255,0.7)" }}>
+            PAGE {pageIndex + 1} / {pageCount}
+          </div>
+          <button
+            type="button"
+            onClick={() => setPageIndex((prev) => Math.min(prev + 1, pageCount - 1))}
+            disabled={pageIndex === pageCount - 1}
+            style={{
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              color: "white",
+              padding: "8px 12px",
+              borderRadius: "10px",
+              cursor: pageIndex === pageCount - 1 ? "not-allowed" : "pointer",
+              opacity: pageIndex === pageCount - 1 ? 0.4 : 1,
+            }}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      ) : null}
+
       {/* AI COMMAND BOX */}
-      <motion.div style={{
+        <motion.div style={{
           width: '450px', backgroundColor: 'rgba(0,0,0,0.8)', padding: '20px',
-          borderRadius: '20px', border: '1px solid rgba(0, 242, 255, 0.3)', backdropFilter: 'blur(8px)'
+          borderRadius: '20px', border: '1px solid rgba(0, 242, 255, 0.3)', backdropFilter: 'blur(8px)', zIndex: 1
         }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
           <Sparkles size={14} color="#00f2ff" />
