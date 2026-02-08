@@ -13,6 +13,7 @@ Project Tambo is a smart-residence experience built with Next.js. It combines an
 - Tambo AI SDK (@tambo-ai/react)
 - Framer Motion
 - WebGL: OGL, Three.js, postprocessing, @react-three/fiber
+- CharlieLabs AI
 
 ## App Routes
 
