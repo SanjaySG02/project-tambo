@@ -85,6 +85,23 @@ Credentials are defined in [src/lib/auth.js](src/lib/auth.js).
 - `npm run start` - run the production server
 - `npm run lint` - run ESLint
 
+## Known Limitations & Future Improvements
+
+- Chatbot UI Flicker
+A brief white flicker may appear in the chatbot panel when transitioning from the dashboard to subrooms.
+Cause: Component re-mounting during route transitions with dynamic AI rendering.
+Planned improvement: Persistent layout mounting and smoother transition states.
+
+- AI Data Synchronization Delay
+When a new unit or user is added via the AI assistant, the frontend updates immediately, but AI analysis may reflect updated data only after a page refresh.
+Cause: AI tools currently operate on a stored data snapshot rather than a reactive data source.
+Planned improvement: Real-time state or backend integration for instant analytical updates.
+
+- Swipe Navigation Edge Cases
+In certain subrooms, back or forward swipe gestures may navigate to unintended routes (e.g., login instead of dashboard).
+Cause: Browser history gestures conflicting with custom spatial navigation logic.
+Planned improvement: Fully controlled in-app gesture routing with disabled browser-level navigation.
+
 ## Notes
 
 - Background effects are client-side components in [src/components](src/components).
