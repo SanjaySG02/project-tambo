@@ -60,7 +60,13 @@ export function AnalyticsPieChart({ title, subtitle, items }: AnalyticsPieChartP
   }, 0);
 
   const palette = ["#22d3ee", "#38bdf8", "#0ea5e9", "#14b8a6", "#f97316", "#eab308"];
-  let currentAngle = 0;
+  const values = safeItems.map((item) => {
+    const value = Number.isFinite(item.value) ? (item.value as number) : 0;
+    return Math.max(0, value);
+  });
+  const sliceAngles = total > 0
+    ? values.map((value) => (value / total) * 360)
+    : values.map(() => 0);
 
   return (
     <div
@@ -91,12 +97,11 @@ export function AnalyticsPieChart({ title, subtitle, items }: AnalyticsPieChartP
           <div style={{ display: "flex", justifyContent: "center" }}>
             <svg width="160" height="160" viewBox="0 0 120 120" role="img">
               {safeItems.map((item, idx) => {
-                const value = Number.isFinite(item.value) ? Math.max(0, item.value as number) : 0;
+                const value = values[idx];
                 if (value <= 0) return null;
-                const sliceAngle = (value / total) * 360;
-                const startAngle = currentAngle;
-                const endAngle = currentAngle + sliceAngle;
-                currentAngle = endAngle;
+                const sliceAngle = sliceAngles[idx];
+                const startAngle = sliceAngles.slice(0, idx).reduce((sum, angle) => sum + angle, 0);
+                const endAngle = startAngle + sliceAngle;
                 const fill = item.color || palette[idx % palette.length];
                 return (
                   <path

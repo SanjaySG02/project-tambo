@@ -118,7 +118,7 @@ export default function OceanWave({ colorTop = '#E6F7FF', colorMid = '#63C3FF', 
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(raf);
     };
-  }, [colorTop, colorMid, colorBottom]);
+  }, [colorTop, colorMid, colorBottom, horizon, showSun]);
 
   return (
     <div ref={ref} className="ocean-wave-container">

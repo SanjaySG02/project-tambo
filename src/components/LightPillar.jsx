@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import "./LightPillar.css";
 
@@ -28,14 +28,11 @@ const LightPillar = ({
   const geometryRef = useRef(null);
   const mouseRef = useRef(new THREE.Vector2(0, 0));
   const timeRef = useRef(0);
-  const [webGLSupported, setWebGLSupported] = useState(true);
-
-  useEffect(() => {
+  const webGLSupported = useMemo(() => {
+    if (typeof document === "undefined") return true;
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-    if (!gl) {
-      setWebGLSupported(false);
-    }
+    return Boolean(gl);
   }, []);
 
   useEffect(() => {
@@ -85,7 +82,6 @@ const LightPillar = ({
         depth: false,
       });
     } catch {
-      setWebGLSupported(false);
       return;
     }
 

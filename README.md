@@ -4,7 +4,7 @@ Project Tambo is a smart-residence experience built with Next.js. It combines an
 
 - Admin and resident flows with unit-aware routing and access guards.
 - Tambo AI assistant with chart-only analysis responses (bar and pie charts).
-- Dynamic GPU backgrounds (Galaxy, Particles, GridScan, LightPillar, Dither).
+- Dynamic GPU backgrounds (Galaxy, Particles, GridScan, LightPillar, ColorBends).
 - LocalStorage-based profiles and utilities with a clear vacancy rule.
 
 ## Tech Stack
@@ -19,10 +19,10 @@ Project Tambo is a smart-residence experience built with Next.js. It combines an
 - `/` - Admin lobby (unit directory, light-pillar background)
 - `/login` - Authentication (GridScan background)
 - `/dashboard?unit=###` - Resident hallway (Galaxy + Particles background)
-- `/utilities?unit=###` - Utilities control (Dither background)
-- `/security?unit=###` - Security command (Dither background)
-- `/amenities?unit=###` - Amenities grid (Dither background)
-- `/community?unit=###` - Community hub (Dither background)
+- `/utilities?unit=###` - Utilities control (ColorBends background)
+- `/security?unit=###` - Security command (ColorBends background)
+- `/amenities?unit=###` - Amenities grid (ColorBends background)
+- `/community?unit=###` - Community hub (ColorBends background)
 
 ## AI Assistant
 
@@ -63,7 +63,17 @@ NEXT_PUBLIC_TAMBO_API_KEY=your_key_here
 ## Default Credentials
 
 - Admin: `admin` / `Admin@123`
-- Residents: `unit101` / `Unit@101`, `unit102` / `Unit@102`, ...
+- Residents:
+	- `unit101` / `Unit@101`
+	- `unit102` / `Unit@102`
+	- `unit201` / `Unit@201`
+	- `unit202` / `Unit@202`
+	- `unit301` / `Unit@301`
+	- `unit302` / `Unit@302`
+	- `unit401` / `Unit@401`
+	- `unit402` / `Unit@402`
+	- `unit501` / `Unit@501`
+	- `unit502` / `Unit@502`
 
 Credentials are defined in [src/lib/auth.js](src/lib/auth.js).
 

@@ -30,7 +30,7 @@ function HallwayContent() {
   const isHydrated = useIsHydrated();
 
   const [command, setCommand] = useState("");
-  const [aiMessage, setAiMessage] = useState("Where should I take you? Try a room name or unit number.");
+  const [aiMessage, setAiMessage] = useState("");
   const [isNavigating, setIsNavigating] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
@@ -66,14 +66,9 @@ function HallwayContent() {
     }
   }, [isHydrated, user, urlUnit, router]);
 
-  useEffect(() => {
-    if (!user) return;
-    if (user.role === "admin") {
-      setAiMessage("Where should I take you? Try a room name or unit number.");
-      return;
-    }
-    setAiMessage("Where should I take you? Try a room name.");
-  }, [user]);
+  const fallbackAiMessage = user?.role === "admin"
+    ? "Where should I take you? Try a room name or unit number."
+    : "Where should I take you? Try a room name.";
 
   useEffect(() => {
     if (!urlUnit) return;
@@ -438,7 +433,9 @@ function HallwayContent() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
             <Sparkles size={16} color="#00f2ff" />
-            <span style={{ fontSize: '12px', color: '#00f2ff', letterSpacing: '2px' }}>{aiMessage}</span>
+            <span style={{ fontSize: '12px', color: '#00f2ff', letterSpacing: '2px' }}>
+              {aiMessage || fallbackAiMessage}
+            </span>
           </div>
 
           <form onSubmit={handleAiCommand} style={{ display: 'flex', gap: '10px' }}>

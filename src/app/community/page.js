@@ -1,22 +1,16 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation"; // 1. Added useSearchParams
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageSquare, Calendar, Users, Bell, Send } from "lucide-react";
+import { ArrowLeft, Calendar, Users, Bell, Send } from "lucide-react";
 import { Suspense, useEffect } from "react";
 import { useAuth } from "../../lib/auth";
 import { UNIT_IDS, getUnitSnapshot } from "../../lib/residence-data";
-import Dither from "../../components/Dither";
-
-const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
-const communityBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`;
+import ColorBends from "../../components/ColorBends";
 
 const communityContainerStyle = {
   minHeight: '100vh',
   position: 'relative',
-  backgroundColor: 'black',
-  backgroundImage: communityBackgroundImage,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
+  backgroundColor: '#000000',
   color: 'white',
   padding: '40px',
   fontFamily: 'sans-serif',
@@ -70,8 +64,15 @@ function CommunityRoomContent() {
 
   return (
     <div className="aura-hqBg" style={communityContainerStyle}>
-      <div className="dither-layer">
-        <Dither enableMouseInteraction={false} />
+      <div className="color-bends-layer">
+        <ColorBends
+          colors={["#1a1207", "#402a0c", "#ffaa00", "#ffdd99"]}
+          speed={0.11}
+          warpStrength={0.85}
+          frequency={1.15}
+          noise={0.08}
+          transparent
+        />
       </div>
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* 3. DYNAMIC UNIT HUD (Shows who is chatting) */}
@@ -79,9 +80,9 @@ function CommunityRoomContent() {
           position: 'absolute', top: '20px', right: '40px', 
           color: '#ffaa00', border: '1px solid rgba(255, 170, 0, 0.4)', 
           padding: '5px 15px', borderRadius: '4px', fontSize: '11px',
-          backgroundColor: 'rgba(0,0,0,0.6)', letterSpacing: '2px', backdropFilter: 'blur(3px)'
+          backgroundColor: 'rgba(0,0,0,0.6)', letterSpacing: '2px', backdropFilter: 'none'
         }}>
-          LOGGED IN AS: RESIDENT {unitNumber}
+          LOGGED IN: UNIT {unitNumber}
         </div>
 
         {/* Navigation */}
@@ -90,7 +91,7 @@ function CommunityRoomContent() {
           alignItems: "center", 
           gap: "20px", 
           marginBottom: "40px",
-          backdropFilter: "blur(4px)",
+          backdropFilter: "none",
           padding: "10px",
           borderRadius: "15px",
           position: "relative",
@@ -165,7 +166,7 @@ function CommunityRoomContent() {
                   display: "flex", 
                   gap: "20px", 
                   alignItems: "center",
-                  backdropFilter: "blur(4px)"
+                  backdropFilter: "none"
                 }}
               >
                 <div style={{ color: item.color }}>{item.icon}</div>
@@ -188,7 +189,7 @@ function CommunityRoomContent() {
           flexDirection: "column", 
           justifyContent: "space-between", 
           height: "450px",
-          backdropFilter: "blur(6px)"
+          backdropFilter: "none"
         }}>
           <div style={{ overflowY: "auto", paddingRight: "10px" }}>
             <div style={{ marginBottom: "20px" }}>

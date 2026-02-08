@@ -49,7 +49,11 @@ export default function LobbyPage() {
   const pageSize = 4;
   const pageCount = Math.max(1, Math.ceil(flats.length / pageSize));
   const isAdmin = user?.role === "admin";
-  const pagedFlats = flats.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
+  const safePageIndex = isAdmin ? Math.min(pageIndex, pageCount - 1) : 0;
+  const pagedFlats = flats.slice(
+    safePageIndex * pageSize,
+    (safePageIndex + 1) * pageSize,
+  );
   const visibleFlats = isAdmin
     ? pagedFlats
     : flats.filter((flat) => flat.id === user?.unit);
@@ -57,15 +61,6 @@ export default function LobbyPage() {
     ? flats.map((flat) => flat.id)
     : flats.filter((flat) => flat.id === user?.unit).map((flat) => flat.id);
 
-  useEffect(() => {
-    if (!isAdmin) {
-      setPageIndex(0);
-      return;
-    }
-    if (pageIndex > pageCount - 1) {
-      setPageIndex(pageCount - 1);
-    }
-  }, [isAdmin, pageIndex, pageCount]);
 
   useEffect(() => {
     if (user?.role === "user" && user.unit) {
@@ -360,34 +355,34 @@ export default function LobbyPage() {
           <button
             type="button"
             onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
-            disabled={pageIndex === 0}
+            disabled={safePageIndex === 0}
             style={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.2)",
               color: "white",
               padding: "8px 12px",
               borderRadius: "10px",
-              cursor: pageIndex === 0 ? "not-allowed" : "pointer",
-              opacity: pageIndex === 0 ? 0.4 : 1,
+              cursor: safePageIndex === 0 ? "not-allowed" : "pointer",
+              opacity: safePageIndex === 0 ? 0.4 : 1,
             }}
           >
             <ChevronLeft size={16} />
           </button>
           <div style={{ fontSize: "11px", letterSpacing: "2px", color: "rgba(255,255,255,0.7)" }}>
-            PAGE {pageIndex + 1} / {pageCount}
+            PAGE {safePageIndex + 1} / {pageCount}
           </div>
           <button
             type="button"
             onClick={() => setPageIndex((prev) => Math.min(prev + 1, pageCount - 1))}
-            disabled={pageIndex === pageCount - 1}
+            disabled={safePageIndex === pageCount - 1}
             style={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.2)",
               color: "white",
               padding: "8px 12px",
               borderRadius: "10px",
-              cursor: pageIndex === pageCount - 1 ? "not-allowed" : "pointer",
-              opacity: pageIndex === pageCount - 1 ? 0.4 : 1,
+              cursor: safePageIndex === pageCount - 1 ? "not-allowed" : "pointer",
+              opacity: safePageIndex === pageCount - 1 ? 0.4 : 1,
             }}
           >
             <ChevronRight size={16} />

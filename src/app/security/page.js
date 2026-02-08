@@ -5,18 +5,12 @@ import { Suspense, useEffect, useState } from "react";
 import { ArrowLeft, Lock, Unlock } from "lucide-react";
 import { useAuth } from "../../lib/auth";
 import { getUnitSnapshot } from "../../lib/residence-data";
-import Dither from "../../components/Dither";
-
-const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
-const securityBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`;
+import ColorBends from "../../components/ColorBends";
 
 const securityContainerStyle = {
   minHeight: '100vh',
   position: 'relative',
-  backgroundColor: '#050505',
-  backgroundImage: securityBackgroundImage,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
+  backgroundColor: '#000000',
   color: 'white',
   padding: '40px',
   fontFamily: 'sans-serif',
@@ -50,8 +44,15 @@ function SecurityRoomContent() {
 
   return (
     <div className="aura-hqBg" style={securityContainerStyle}>
-      <div className="dither-layer">
-        <Dither enableMouseInteraction={false} />
+      <div className="color-bends-layer">
+        <ColorBends
+          colors={["#14070f", "#3a0f2a", "#ff0055", "#ff7aa2"]}
+          speed={0.14}
+          warpStrength={0.9}
+          frequency={1.25}
+          noise={0.1}
+          transparent
+        />
       </div>
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* DYNAMIC HUD */}
@@ -60,9 +61,9 @@ function SecurityRoomContent() {
           color: '#ff0055', border: '1px solid #ff0055', 
           padding: '5px 20px', borderRadius: '4px', fontSize: '12px',
           letterSpacing: '2px', backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          backdropFilter: 'blur(3px)'
+          backdropFilter: 'none'
         }}>
-          SECURE CHANNEL: UNIT_{unitNumber}
+          LOGGED IN: UNIT {unitNumber}
         </div>
 
         {/* Navigation Header */}
@@ -71,7 +72,7 @@ function SecurityRoomContent() {
           alignItems: "center", 
           gap: "20px", 
           marginBottom: "60px",
-          backdropFilter: "blur(4px)",
+          backdropFilter: "none",
           padding: "10px",
           borderRadius: "15px",
           position: "relative",
@@ -140,7 +141,7 @@ function SecurityRoomContent() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: `0 0 40px ${isLocked ? 'rgba(255, 0, 85, 0.3)' : 'rgba(0, 255, 136, 0.3)'}`,
               backgroundColor: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(4px)'
+              backdropFilter: 'none'
             }}
           >
             {isLocked ? <Lock size={90} color="#ff0055" /> : <Unlock size={90} color="#00ff88" />}

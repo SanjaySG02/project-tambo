@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unknown-property */
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -33,19 +32,27 @@ const AntigravityInner = ({
     const width = viewport.width || 100;
     const height = viewport.height || 100;
 
+    const seeded = (seed) => {
+      const value = Math.sin(seed) * 10000;
+      return value - Math.floor(value);
+    };
+
+    const randRange = (seed, min, max) => min + seeded(seed) * (max - min);
+
     for (let i = 0; i < count; i++) {
-      const t = Math.random() * 100;
-      const factor = 20 + Math.random() * 100;
-      const speed = 0.01 + Math.random() / 200;
-      const xFactor = -50 + Math.random() * 100;
-      const yFactor = -50 + Math.random() * 100;
-      const zFactor = -50 + Math.random() * 100;
+      const base = i * 97.13;
+      const t = randRange(base + 1, 0, 100);
+      const factor = randRange(base + 2, 20, 120);
+      const speed = randRange(base + 3, 0.01, 0.015);
+      const xFactor = randRange(base + 4, -50, 50);
+      const yFactor = randRange(base + 5, -50, 50);
+      const zFactor = randRange(base + 6, -50, 50);
 
-      const x = (Math.random() - 0.5) * width;
-      const y = (Math.random() - 0.5) * height;
-      const z = (Math.random() - 0.5) * 20;
+      const x = randRange(base + 7, -0.5, 0.5) * width;
+      const y = randRange(base + 8, -0.5, 0.5) * height;
+      const z = randRange(base + 9, -0.5, 0.5) * 20;
 
-      const randomRadiusOffset = (Math.random() - 0.5) * 2;
+      const randomRadiusOffset = randRange(base + 10, -0.5, 0.5) * 2;
 
       temp.push({
         t,

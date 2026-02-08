@@ -104,6 +104,10 @@ export function AuthProvider({ children }) {
   });
   const [user, setUser] = useState(null);
   const [isReady] = useState(true);
+  const activeProfiles = useMemo(
+    () => (isProvisioned ? profiles : DEFAULT_PROFILES),
+    [profiles, isProvisioned],
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -112,14 +116,14 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!isProvisioned) return;
     window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profiles));
-  }, [profiles]);
+  }, [profiles, isProvisioned]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!isProvisioned) {
       window.localStorage.setItem(PROVISION_FLAG_KEY, "false");
-      setProfiles(DEFAULT_PROFILES);
       resetAllUtilities();
     }
   }, [isProvisioned]);
@@ -169,7 +173,7 @@ export function AuthProvider({ children }) {
       }
 
       const availableUnits = UNIT_IDS.filter((id) =>
-        isUnitVacant(profiles[id], getUnitUtilities(id)),
+        isUnitVacant(activeProfiles[id], getUnitUtilities(id)),
       );
 
       if (availableUnits.length === 0) {
@@ -223,7 +227,7 @@ export function AuthProvider({ children }) {
       });
       return { ok: true, user: nextEntry };
     },
-    [credentials, profiles],
+    [credentials, activeProfiles],
   );
 
   const removeUserFromUnit = useCallback(
@@ -284,25 +288,25 @@ export function AuthProvider({ children }) {
   const getProfileForUnit = useCallback(
     (unitId) => {
       if (!unitId) return { name: "", mobile: "", email: "" };
-      return profiles[unitId] || { name: "", mobile: "", email: "" };
+      return activeProfiles[unitId] || { name: "", mobile: "", email: "" };
     },
-    [profiles],
+    [activeProfiles],
   );
 
   const getAssignedUnits = useCallback(
     () =>
       isProvisioned
-        ? UNIT_IDS.filter((id) => !isUnitVacant(profiles[id], getUnitUtilities(id)))
+        ? UNIT_IDS.filter((id) => !isUnitVacant(activeProfiles[id], getUnitUtilities(id)))
         : [],
-    [profiles, isProvisioned],
+    [activeProfiles, isProvisioned],
   );
 
   const getAvailableUnits = useCallback(
     () =>
       isProvisioned
-        ? UNIT_IDS.filter((id) => isUnitVacant(profiles[id], getUnitUtilities(id)))
+        ? UNIT_IDS.filter((id) => isUnitVacant(activeProfiles[id], getUnitUtilities(id)))
         : UNIT_IDS,
-    [profiles, isProvisioned],
+    [activeProfiles, isProvisioned],
   );
 
   const logout = useCallback(() => {

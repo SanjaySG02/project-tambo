@@ -9,19 +9,13 @@ import DumbbellEffect from "../../components/Dumbbell";
 import LoungeArea from "../../components/LoungeArea";
 import SwimmingPool from "../../components/SwimmingPool";
 import ParkScene from "../../components/ParkScene";
-import Dither from "../../components/Dither";
-
-const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
-const amenitiesBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`;
+import ColorBends from "../../components/ColorBends";
 
 const amenitiesContainerStyle = {
   height: '100vh',
   width: '100vw',
   position: 'relative',
-  backgroundColor: 'black',
-  backgroundImage: amenitiesBackgroundImage,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
+  backgroundColor: '#000000',
   color: 'white',
   overflow: 'hidden',
   display: 'flex',
@@ -87,8 +81,15 @@ function AmenitiesRoomContent() {
 
   return (
     <div className="aura-hqBg" style={amenitiesContainerStyle}>
-      <div className="dither-layer">
-        <Dither enableMouseInteraction={false} />
+      <div className="color-bends-layer">
+        <ColorBends
+          colors={["#07150f", "#0b3d2e", "#00ff88", "#8b5cf6"]}
+          speed={0.1}
+          warpStrength={0.8}
+          frequency={1.05}
+          noise={0.08}
+          transparent
+        />
       </div>
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* 3. UNIT HUD: Shows which resident is accessing amenities */}
@@ -97,13 +98,13 @@ function AmenitiesRoomContent() {
           color: 'white', border: '1px solid rgba(255,255,255,0.2)', 
           padding: '8px 20px', borderRadius: '4px', fontSize: '10px',
           backgroundColor: 'rgba(0,0,0,0.6)', letterSpacing: '3px',
-          backdropFilter: 'blur(3px)', zIndex: 10
+          backdropFilter: 'none', zIndex: 10
         }}>
-          RESIDENT AUTH: <span style={{ color: '#00f2ff' }}>{unitNumber}</span>
+          LOGGED IN: UNIT <span style={{ color: '#00f2ff' }}>{unitNumber}</span>
         </div>
 
         {/* Header */}
-        <nav style={{ padding: '30px', display: 'flex', alignItems: 'center', gap: '20px', backdropFilter: 'blur(4px)', position: 'relative', zIndex: 2 }}>
+        <nav style={{ padding: '30px', display: 'flex', alignItems: 'center', gap: '20px', backdropFilter: 'none', position: 'relative', zIndex: 2 }}>
           <div style={{ display: "flex", gap: "8px" }}>
             {user?.role === "admin" ? (
               <button
@@ -198,7 +199,7 @@ function AmenitiesRoomContent() {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                backdropFilter: 'blur(6px)',
+                backdropFilter: 'none',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                 cursor: (card.title === 'GYM' || card.title === 'LOUNGE' || card.title === 'POOL' || card.title === 'PARK') ? 'pointer' : 'default',
                 position: 'relative',

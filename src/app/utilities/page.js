@@ -9,18 +9,12 @@ import Lightning from "../../components/Lightning";
 import Water from "../../components/Water";
 import GasEffect from "../../components/GasEffect";
 import SunRays from "../../components/SunRays";
-import Dither from "../../components/Dither";
-
-const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
-const utilitiesBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%), url('${backgroundImageLink}')`;
+import ColorBends from "../../components/ColorBends";
 
 const utilitiesContainerStyle = {
   minHeight: '100vh',
   position: 'relative',
-  backgroundColor: 'black',
-  backgroundImage: utilitiesBackgroundImage,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
+  backgroundColor: '#000000',
   color: 'white',
   padding: '40px',
   fontFamily: 'sans-serif',
@@ -93,8 +87,15 @@ function UtilitiesRoomContent() {
 
   return (
     <div className="aura-hqBg" style={utilitiesContainerStyle}>
-      <div className="dither-layer">
-        <Dither enableMouseInteraction={false} />
+      <div className="color-bends-layer">
+        <ColorBends
+          colors={["#0b0f17", "#10304a", "#0f6b7a", "#10c6d0"]}
+          speed={0.12}
+          warpStrength={0.85}
+          frequency={1.1}
+          noise={0.08}
+          transparent
+        />
       </div>
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* 3. DYNAMIC UNIT HUD */}
@@ -104,7 +105,7 @@ function UtilitiesRoomContent() {
           padding: '5px 15px', borderRadius: '4px', fontSize: '12px',
           backgroundColor: 'rgba(0,0,0,0.5)', letterSpacing: '2px'
         }}>
-          MONITORING: UNIT {unitNumber}
+          LOGGED IN: UNIT {unitNumber}
         </div>
 
         {/* Navigation */}
@@ -113,7 +114,7 @@ function UtilitiesRoomContent() {
           alignItems: "center", 
           gap: "20px", 
           marginBottom: "60px",
-          backdropFilter: "blur(4px)",
+          backdropFilter: "none",
           padding: "10px",
           borderRadius: "15px",
           position: "relative",
@@ -221,7 +222,7 @@ function UtilitiesRoomContent() {
                   borderRadius: "24px",
                   position: "relative",
                   overflow: "hidden",
-                  backdropFilter: "blur(6px)",
+                  backdropFilter: "none",
                   cursor:
                     item.name === "Electricity" ||
                     item.name === "Water" ||
