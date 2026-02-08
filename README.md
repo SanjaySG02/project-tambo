@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Project Tambo is a smart-residence experience built with Next.js. It combines an admin lobby, resident dashboards, AI-driven analytics, and immersive WebGL backgrounds across rooms like utilities, security, amenities, and community.
+
+## Highlights
+
+- Admin and resident flows with unit-aware routing and access guards.
+- Tambo AI assistant with chart-only analysis responses (bar and pie charts).
+- Dynamic GPU backgrounds (Galaxy, Particles, GridScan, LightPillar, Dither).
+- LocalStorage-based profiles and utilities with a clear vacancy rule.
+
+## Tech Stack
+
+- Next.js 16 (App Router) + React 19
+- Tambo AI SDK (@tambo-ai/react)
+- Framer Motion
+- WebGL: OGL, Three.js, postprocessing, @react-three/fiber
+
+## App Routes
+
+- `/` - Admin lobby (unit directory, light-pillar background)
+- `/login` - Authentication (GridScan background)
+- `/dashboard?unit=###` - Resident hallway (Galaxy + Particles background)
+- `/utilities?unit=###` - Utilities control (Dither background)
+- `/security?unit=###` - Security command (Dither background)
+- `/amenities?unit=###` - Amenities grid (Dither background)
+- `/community?unit=###` - Community hub (Dither background)
+
+## AI Assistant
+
+- Chart components: [src/components/tambo/analytics-bar-chart.tsx](src/components/tambo/analytics-bar-chart.tsx) and [src/components/tambo/analytics-pie-chart.tsx](src/components/tambo/analytics-pie-chart.tsx)
+- Component registry: [src/lib/tambo.ts](src/lib/tambo.ts)
+- Assistant configuration and guidance: [src/app/providers.js](src/app/providers.js)
+
+## Data + Vacancy Rules
+
+- Unit credentials and profiles are stored in LocalStorage.
+- A unit is considered vacant only when profile fields are empty and all utilities are zero.
+- Source of truth for sample unit data: [src/lib/residence-data.js](src/lib/residence-data.js)
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a .env.local file in the project root:
 
-## Learn More
+```dotenv
+NEXT_PUBLIC_TAMBO_API_KEY=your_key_here
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Default Credentials
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Admin: `admin` / `Admin@123`
+- Residents: `unit101` / `Unit@101`, `unit102` / `Unit@102`, ...
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Credentials are defined in [src/lib/auth.js](src/lib/auth.js).
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run dev` - start the dev server
+- `npm run build` - production build
+- `npm run start` - run the production server
+- `npm run lint` - run ESLint
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+
+- Background effects are client-side components in [src/components](src/components).
+- Room pages are client components that enforce unit access via URL query checks.
