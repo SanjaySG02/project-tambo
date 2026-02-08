@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Building2, Home, Sparkles, Send } from "lucide-react";
 import { useTransitionIntent } from "../components/aura/transition-intent";
 import { useAuth } from "../lib/auth";
+import Galaxy from "../components/Galaxy";
 
 export default function LobbyPage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function LobbyPage() {
   const { user, logout } = useAuth();
   const [command, setCommand] = useState("");
   const [aiMessage, setAiMessage] = useState("Lobby Terminal Active. Select a Unit.");
+  const [hoveredUnit, setHoveredUnit] = useState(null);
 
   const lobbyBg = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop";
 
@@ -153,8 +155,11 @@ export default function LobbyPage() {
               width: '260px', padding: '25px', backgroundColor: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px',
               cursor: 'pointer', backdropFilter: 'blur(4px)', touchAction: 'manipulation',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              position: 'relative'
             }}
+            onHoverStart={() => setHoveredUnit(flat.id)}
+            onHoverEnd={() => setHoveredUnit(null)}
             role="button"
             tabIndex={0}
             onPointerDown={() => {
@@ -169,11 +174,34 @@ export default function LobbyPage() {
               }
             }}
           >
-            <div>
+            {hoveredUnit === flat.id && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '15px',
+                  overflow: 'hidden',
+                  zIndex: 0,
+                  pointerEvents: 'none'
+                }}
+              >
+                <Galaxy
+                  density={1.4}
+                  hueShift={210}
+                  glowIntensity={0.55}
+                  saturation={0.25}
+                  twinkleIntensity={0.5}
+                  rotationSpeed={0.2}
+                  speed={1.6}
+                  transparent={true}
+                />
+              </div>
+            )}
+            <div style={{ position: 'relative', zIndex: 1 }}>
               <h2 style={{ fontSize: '24px', margin: 0 }}>UNIT {flat.id}</h2>
               <span style={{ fontSize: '10px', color: '#00f2ff', opacity: 0.7 }}>{flat.type}</span>
             </div>
-            <Home size={20} color="#00f2ff" />
+            <Home size={20} color="#00f2ff" style={{ position: 'relative', zIndex: 1 }} />
           </motion.div>
         ))}
       </div>

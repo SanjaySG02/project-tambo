@@ -2,9 +2,13 @@
 import { useRouter, useSearchParams } from "next/navigation"; // 1. Added useSearchParams
 import { motion } from "framer-motion";
 import { ArrowLeft, Dumbbell, Waves, Coffee, TreePine } from "lucide-react";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth";
 import { getUnitSnapshot } from "../../lib/residence-data";
+import DumbbellEffect from "../../components/Dumbbell";
+import LoungeArea from "../../components/LoungeArea";
+import SwimmingPool from "../../components/SwimmingPool";
+import ParkScene from "../../components/ParkScene";
 
 const backgroundImageLink = "https://image2url.com/r2/default/images/1770320864965-a1fac360-b36d-483d-9d73-75c8339f9e24.png";
 const amenitiesBackgroundImage = `radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.9) 100%), url('${backgroundImageLink}')`;
@@ -26,6 +30,10 @@ function AmenitiesRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, logout } = useAuth();
+  const [showDumbbell, setShowDumbbell] = useState(false);
+  const [showLounge, setShowLounge] = useState(false);
+  const [showPool, setShowPool] = useState(false);
+  const [showPark, setShowPark] = useState(false);
 
   // 2. Grabs the unit number from the URL
   const unitNumber = searchParams.get('unit');
@@ -158,6 +166,24 @@ function AmenitiesRoomContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             whileHover={{ scale: 1.05, borderColor: card.color }}
+            onMouseEnter={() => {
+              if (card.title === 'GYM') setShowDumbbell(true);
+              if (card.title === 'LOUNGE') setShowLounge(true);
+              if (card.title === 'POOL') setShowPool(true);
+              if (card.title === 'PARK') setShowPark(true);
+            }}
+            onMouseLeave={() => {
+              if (card.title === 'GYM') setShowDumbbell(false);
+              if (card.title === 'LOUNGE') setShowLounge(false);
+              if (card.title === 'POOL') setShowPool(false);
+              if (card.title === 'PARK') setShowPark(false);
+            }}
+            onClick={() => {
+              if (card.title === 'GYM') setShowDumbbell(!showDumbbell);
+              if (card.title === 'LOUNGE') setShowLounge(!showLounge);
+              if (card.title === 'POOL') setShowPool(!showPool);
+              if (card.title === 'PARK') setShowPark(!showPark);
+            }}
             style={{
               height: '350px',
               backgroundColor: 'rgba(0,0,0,0.7)',
@@ -169,11 +195,57 @@ function AmenitiesRoomContent() {
               justifyContent: 'space-between',
               backdropFilter: 'blur(6px)',
               boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-              cursor: 'default'
+              cursor: (card.title === 'GYM' || card.title === 'LOUNGE' || card.title === 'POOL' || card.title === 'PARK') ? 'pointer' : 'default',
+              position: 'relative',
+              zIndex: 1
             }}
           >
-            <div style={{ color: card.color }}>{card.icon}</div>
-            <div>
+            {card.title === 'GYM' && showDumbbell && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '20px',
+                overflow: 'hidden',
+                zIndex: 2
+              }}>
+                <DumbbellEffect />
+              </div>
+            )}
+            {card.title === 'LOUNGE' && showLounge && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '20px',
+                overflow: 'hidden',
+                zIndex: 2
+              }}>
+                <LoungeArea />
+              </div>
+            )}
+            {card.title === 'POOL' && showPool && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '20px',
+                overflow: 'hidden',
+                zIndex: 2
+              }}>
+                <SwimmingPool />
+              </div>
+            )}
+            {card.title === 'PARK' && showPark && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '20px',
+                overflow: 'hidden',
+                zIndex: 2
+              }}>
+                <ParkScene />
+              </div>
+            )}
+            <div style={{ color: card.color, position: 'relative', zIndex: (showDumbbell && card.title === 'GYM') || (showLounge && card.title === 'LOUNGE') || (showPool && card.title === 'POOL') || (showPark && card.title === 'PARK') ? 3 : 1 }}>{card.icon}</div>
+            <div style={{ position: 'relative', zIndex: (showDumbbell && card.title === 'GYM') || (showLounge && card.title === 'LOUNGE') || (showPool && card.title === 'POOL') || (showPark && card.title === 'PARK') ? 3 : 1 }}>
               <h2 style={{ fontSize: '28px', margin: '0', color: card.color }}>{card.title}</h2>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginTop: '10px' }}>{card.desc}</p>
             </div>
@@ -181,7 +253,9 @@ function AmenitiesRoomContent() {
               height: '2px', 
               width: '40px', 
               backgroundColor: card.color, 
-              boxShadow: `0 0 10px ${card.color}` 
+              boxShadow: `0 0 10px ${card.color}`,
+              position: 'relative',
+              zIndex: (showDumbbell && card.title === 'GYM') || (showLounge && card.title === 'LOUNGE') || (showPool && card.title === 'POOL') || (showPark && card.title === 'PARK') ? 3 : 1
             }} />
           </motion.div>
         ))}

@@ -1,0 +1,87 @@
+.sun-rays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.sun {
+  position: absolute;
+  left: 8%;
+  top: -12%;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,230,1), rgba(255,245,180,0.98) 25%, rgba(255,220,100,0.95) 45%, rgba(255,190,60,0.8) 70%, rgba(255,160,40,0.3) 100%);
+  filter: blur(4px) drop-shadow(0 16px 40px rgba(255,180,50,0.3));
+  z-index: 2;
+  box-shadow: 0 0 50px rgba(255,200,80,0.4), inset -15px -15px 30px rgba(0,0,0,0.1);
+}
+
+.sun-rays .ray {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8%;
+  height: 160%;
+  background: linear-gradient(180deg, rgba(255,245,160,0.98), rgba(255,210,110,0.92) 35%, rgba(255,180,80,0.6) 65%, rgba(255,150,40,0.14) 100%);
+  transform-origin: 6% -8%; /* origin at the sun's center */
+  border-radius: 50%;
+  filter: blur(1.6px) drop-shadow(0 6px 14px rgba(255,160,50,0.08));
+  opacity: 0;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+.sun-rays .ray.r1 { transform: rotate(-18deg) scaleY(0); animation: emit 3.6s linear infinite; animation-delay: 0s; }
+.sun-rays .ray.r2 { transform: rotate(-14deg) scaleY(0); animation: emit 3.8s linear infinite; animation-delay: 0.3s; }
+.sun-rays .ray.r3 { transform: rotate(-10deg) scaleY(0); animation: emit 4.0s linear infinite; animation-delay: 0.6s; }
+.sun-rays .ray.r4 { transform: rotate(-6deg) scaleY(0); animation: emit 4.2s linear infinite; animation-delay: 0.9s; }
+.sun-rays .ray.r5 { transform: rotate(-2deg) scaleY(0); animation: emit 4.4s linear infinite; animation-delay: 1.2s; }
+.sun-rays .ray.r6 { transform: rotate(2deg) scaleY(0); animation: emit 4.6s linear infinite; animation-delay: 1.5s; }
+.sun-rays .ray.r7 { transform: rotate(6deg) scaleY(0); animation: emit 4.8s linear infinite; animation-delay: 1.8s; }
+.sun-rays .ray.r8 { transform: rotate(10deg) scaleY(0); animation: emit 5.0s linear infinite; animation-delay: 2.1s; }
+.sun-rays .ray.r9 { transform: rotate(14deg) scaleY(0); animation: emit 5.2s linear infinite; animation-delay: 2.4s; }
+.sun-rays .ray.r10 { transform: rotate(18deg) scaleY(0); animation: emit 5.4s linear infinite; animation-delay: 2.7s; }
+
+.sun-rays .ray {
+  position: absolute;
+  /* position rays so their top aligns with the sun center (sun left:8% top:-12% width:110px height:110px) */
+  left: calc(8% + 55px);
+  top: calc(-12% + 55px);
+  width: 12%;
+  height: 300px;
+  background: linear-gradient(180deg, rgba(255,250,200,0.95), rgba(255,225,130,0.85) 30%, rgba(255,200,80,0.6) 55%, rgba(255,170,50,0.25) 80%, rgba(255,140,30,0.08) 100%);
+  transform-origin: 50% 0%; /* origin at top center of the ray (sun center) */
+  border-radius: 50%;
+  filter: blur(1.2px) drop-shadow(0 10px 20px rgba(255,180,60,0.12));
+  opacity: 0;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+.sun-rays .ray.r1 { --angle: -180deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 5.0s linear infinite; animation-delay: 0s; }
+.sun-rays .ray.r2 { --angle: -157.5deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 5.2s linear infinite; animation-delay: 0.15s; }
+.sun-rays .ray.r3 { --angle: -135deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 5.4s linear infinite; animation-delay: 0.3s; }
+.sun-rays .ray.r4 { --angle: -112.5deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 5.6s linear infinite; animation-delay: 0.45s; }
+.sun-rays .ray.r5 { --angle: -90deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 5.8s linear infinite; animation-delay: 0.6s; }
+.sun-rays .ray.r6 { --angle: -67.5deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 6.0s linear infinite; animation-delay: 0.75s; }
+.sun-rays .ray.r7 { --angle: -45deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 6.2s linear infinite; animation-delay: 0.9s; }
+.sun-rays .ray.r8 { --angle: -22.5deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 6.4s linear infinite; animation-delay: 1.05s; }
+.sun-rays .ray.r9 { --angle: 0deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 6.6s linear infinite; animation-delay: 1.2s; }
+.sun-rays .ray.r10 { --angle: 22.5deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 6.8s linear infinite; animation-delay: 1.35s; }
+.sun-rays .ray.r11 { --angle: 45deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 7.0s linear infinite; animation-delay: 1.5s; }
+.sun-rays .ray.r12 { --angle: 67.5deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 7.2s linear infinite; animation-delay: 1.65s; }
+.sun-rays .ray.r13 { --angle: 90deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 7.4s linear infinite; animation-delay: 1.8s; }
+.sun-rays .ray.r14 { --angle: 112.5deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 7.6s linear infinite; animation-delay: 1.95s; }
+.sun-rays .ray.r15 { --angle: 135deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 7.8s linear infinite; animation-delay: 2.1s; }
+.sun-rays .ray.r16 { --angle: 157.5deg; transform: rotate(var(--angle)) scaleY(0); animation: emit 8.0s linear infinite; animation-delay: 2.25s; }
+
+@keyframes emit {
+  0% { transform: rotate(var(--angle)) scaleY(0); opacity: 0; }
+  5% { opacity: 0.92; }
+  35% { transform: rotate(var(--angle)) scaleY(0.75); opacity: 0.88; }
+  65% { transform: rotate(var(--angle)) scaleY(1.0); opacity: 0.7; }
+  100% { transform: rotate(var(--angle)) scaleY(1.2); opacity: 0; }
+}

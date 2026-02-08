@@ -1,0 +1,48 @@
+.water-card {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(100, 180, 220, 0.5), rgba(60, 150, 200, 0.6));
+  box-shadow: inset 10px 10px 10px 10px rgba(30, 100, 150, 0.3),
+    10px 10px 20px rgba(40, 120, 160, 0.5),
+    inset -10px -10px 10px 10px rgba(150, 220, 255, 0.5);
+  border-radius: 51% 49% 62% 38% / 25% 57% 43% 75%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.water-card::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  background-color: rgba(200, 240, 255, 0.9);
+  border-radius: 80% 20% 91% 9% / 48% 67% 33% 52%;
+  top: 20px;
+  left: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.water-card::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  background-color: rgba(150, 220, 255, 0.85);
+  border-radius: 48% 52% 45% 55% / 48% 67% 33% 52%;
+  top: 15px;
+  left: 30px;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
