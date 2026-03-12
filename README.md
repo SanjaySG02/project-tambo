@@ -106,3 +106,7 @@ Planned improvement: Fully controlled in-app gesture routing with disabled brows
 
 - Background effects are client-side components in [src/components](src/components).
 - Room pages are client components that enforce unit access via URL query checks.
+
+## Links
+Youtube : https://youtu.be/1hJg411U-6o
+Deployed Website : https://projecttambo.netlify.app/
